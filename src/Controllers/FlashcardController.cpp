@@ -1,38 +1,33 @@
 #include "FlashcardController.h"
 
+#include "../Repository/MockDeckRepository.h"
+
 PolyQ::FlashcardController::FlashcardController(QObject* parent)
     : QObject(parent)
 {
-    m_cards = {
-        { "la pomme", "the apple" },
-        { "le chat", "the cat" },
-        { "merci", "thank you" }
-    };
+    m_pRepository = std::make_unique<MockDeckRepository>();
+    m_pRepository->Initialize();
 
-    std::vector<Deck> decks = {
-        { 1, "French Basics", "3 cards due today", 3, true },
-        { 2, "Portuguese Starter", "Coming soon", 0, false },
-        { 3, "Russian - English", "Coming soon", 0, false },
-        { 5, "Dutch - English", "Coming soon", 0, false },
-        { 6, "English - Dutch", "Coming soon", 0, false },
-        { 7, "Japanese - English", "Coming soon", 0, false }
-    };
+    loadDecks();
+}
 
-    m_DeckModel.setDecks(std::move(decks));
+PolyQ::FlashcardController::~FlashcardController()
+{
+
 }
 
 QString PolyQ::FlashcardController::front() const
 {
-    if (m_cards.isEmpty())
+    if (m_cardModel.isEmpty())
         return {};
-    return m_cards[m_cardIndex].front;
+    return m_cardModel.cardAt(m_cardIndex).front;
 }
 
 QString PolyQ::FlashcardController::back() const
 {
-    if (m_cards.isEmpty())
+    if (m_cardModel.isEmpty())
         return {};
-    return m_cards[m_cardIndex].back;
+    return m_cardModel.cardAt(m_cardIndex).back;
 }
 
 bool PolyQ::FlashcardController::showingAnswer() const
@@ -47,7 +42,7 @@ int PolyQ::FlashcardController::cardIndex() const
 
 int PolyQ::FlashcardController::cardCount() const
 {
-    return m_cards.size();
+    return m_cardModel.count();
 }
 
 void PolyQ::FlashcardController::showAnswer()
@@ -79,6 +74,48 @@ void PolyQ::FlashcardController::reviewEasy()
     reviewCard(3);
 }
 
+void PolyQ::FlashcardController::loadDecks()
+{
+    m_DeckModel.setDecks(m_pRepository->GetAllDecks());
+}
+
+void PolyQ::FlashcardController::selectDeck(int deckId)
+{
+    if (m_selectedDeckId == deckId)
+        return;
+
+    m_selectedDeckId = deckId;
+    emit selectedDeckChanged();
+
+    loadCards(deckId);
+}
+
+void PolyQ::FlashcardController::createDeck(const QString& name)
+{
+    const QString trimmedName = name.trimmed();
+
+    if (trimmedName.isEmpty())
+        return;
+
+    if (m_pRepository->CreateDeck(trimmedName))
+        loadDecks();
+}
+
+void PolyQ::FlashcardController::createCard(const QString& front, const QString& back)
+{
+    if (m_selectedDeckId == -1)
+        return;
+
+    if (front.trimmed().isEmpty() || back.trimmed().isEmpty())
+        return;
+
+    if (m_pRepository->CreateCard(m_selectedDeckId, front.trimmed(), back.trimmed()))
+    {
+        m_cardModel.setCards(m_pRepository->GetCardsForDeck(m_selectedDeckId));
+        loadDecks();
+    }
+}
+
 void PolyQ::FlashcardController::reviewCard(int rating)
 {
     Q_UNUSED(rating);
@@ -86,12 +123,17 @@ void PolyQ::FlashcardController::reviewCard(int rating)
     nextCard();
 }
 
+void PolyQ::FlashcardController::loadCards(int deckId)
+{
+    m_cardModel.setCards(m_pRepository->GetCardsForDeck(deckId));
+}
+
 void PolyQ::FlashcardController::nextCard()
 {
-    if (m_cards.isEmpty())
+    if (m_cardModel.isEmpty())
         return;
 
-    m_cardIndex = (m_cardIndex + 1) % m_cards.size();
+    m_cardIndex = (m_cardIndex + 1) % m_cardModel.count();
     m_showingAnswer = false;
 
     emit cardChanged();

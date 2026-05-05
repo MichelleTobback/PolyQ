@@ -64,7 +64,7 @@ Page {
 
             spacing: Theme.spacing
 
-            model: root.flashcardController.deckModel
+            model: root.flashcardController.decks
 
             delegate: DeckCard {
                 width: ListView.view.width
@@ -74,7 +74,10 @@ Page {
                 enabled: model.enabled
                 opacity: model.enabled ? 1.0 : 0.55
 
-                onClicked: root.openDeck()
+                onClicked: {
+                    flashcardController.selectDeck(deckId)
+                    openDeck()
+                }
             }
         }
 

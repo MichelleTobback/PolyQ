@@ -1,0 +1,76 @@
+#include "FlashcardListModel.h"
+
+PolyQ::FlashcardListModel::FlashcardListModel(QObject* parent)
+    : QAbstractListModel(parent)
+{
+}
+
+int PolyQ::FlashcardListModel::rowCount(const QModelIndex& parent) const
+{
+    if (parent.isValid())
+        return 0;
+
+    return static_cast<int>(m_cards.size());
+}
+
+QVariant PolyQ::FlashcardListModel::data(const QModelIndex& index, int role) const
+{
+    if (!index.isValid())
+        return {};
+
+    const int row = index.row();
+
+    if (row < 0 || row >= static_cast<int>(m_cards.size()))
+        return {};
+
+    const Flashcard& card = m_cards[row];
+
+    switch (role)
+    {
+    case IdRole:
+        return card.id;
+    case DeckIdRole:
+        return card.deckId;
+    case FrontRole:
+        return card.front;
+    case BackRole:
+        return card.back;
+    default:
+        return {};
+    }
+}
+
+QHash<int, QByteArray> PolyQ::FlashcardListModel::roleNames() const
+{
+    return {
+        { IdRole, "cardId" },
+        { DeckIdRole, "deckId" },
+        { FrontRole, "front" },
+        { BackRole, "back" }
+    };
+}
+
+void PolyQ::FlashcardListModel::setCards(std::vector<Flashcard> cards)
+{
+    beginResetModel();
+    m_cards = std::move(cards);
+    endResetModel();
+}
+
+PolyQ::Flashcard PolyQ::FlashcardListModel::cardAt(int row) const
+{
+    if (row < 0 || row >= static_cast<int>(m_cards.size()))
+        return {};
+
+    return m_cards[row];
+}
+
+int PolyQ::FlashcardListModel::count() const
+{
+    return static_cast<int>(m_cards.size());
+}
+
+bool PolyQ::FlashcardListModel::isEmpty() const
+{
+    return m_cards.size() == 0;
+}

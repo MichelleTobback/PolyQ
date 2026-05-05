@@ -10,10 +10,20 @@ qt_standard_project_setup(REQUIRES 6.10)
 
 qt_add_executable(appPolyQ
     src/main.cpp
+
     src/Controllers/FlashcardController.cpp
     src/Controllers/FlashcardController.h
+
     src/Model/Deck.h
+    src/Model/Flashcard.h
+
     src/ViewModel/DeckModel.h
+    src/ViewModel/FlashcardListModel.h
+    src/ViewModel/FlashcardListModel.cpp
+
+    src/Repository/IDeckRepository.h
+    src/Repository/MockDeckRepository.h
+    src/Repository/MockDeckRepository.cpp
 )
 
 qt_add_qml_module(appPolyQ

@@ -37,7 +37,7 @@ Page {
             }
 
             Text {
-                text: (root.flashcardController.cardIndex + 1) + " / " + root.flashcardController.cards.length
+                text: (root.flashcardController.cardIndex + 1) + " / " + root.flashcardController.cardCount
                 font.pixelSize: Theme.fontBody
                 color: Theme.colors.textSecondary
             }
