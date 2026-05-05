@@ -1,32 +1,110 @@
-# Prerequisites
-*.d
+# ----------------------------
+# OS / Editor junk
+# ----------------------------
+.DS_Store
+Thumbs.db
+.directory
 
-# Compiled Object files
-*.slo
-*.lo
+# Vim / Emacs
+*.swp
+*~
+.#*
+*.flc
+
+# ----------------------------
+# Qt Creator / IDE
+# ----------------------------
+*.pro.user*
+*.qbs.user*
+CMakeLists.txt.user*
+.qmake.cache
+.qmake.stash
+.qtcreator/
+**/.qmlls.ini
+
+# ----------------------------
+# Build directories
+# ----------------------------
+build/
+build-*/
+*/build/
+out/
+bin/
+
+# ----------------------------
+# CMake
+# ----------------------------
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# ----------------------------
+# Qt generated files
+# ----------------------------
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*.moc
+*.rcc
+*.uic
+*.qm
+
+# ----------------------------
+# C++ / Compilation
+# ----------------------------
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
 *.a
+*.so
+*.so.*
+*.dll
+*.exe
 *.lib
 
-# Executables
-*.exe
-*.out
-*.app
+# Debug symbols
+*.pdb
+*.ilk
+*.idb
+
+# ----------------------------
+# Android (Qt for Android)
+# ----------------------------
+android-build/
+android/
+*.apk
+*.aab
+*.keystore
+local.properties
+.gradle/
+.gradle-cache/
+build.gradle
+captures/
+
+# ----------------------------
+# Visual Studio
+# ----------------------------
+.vs/
+
+# ----------------------------
+# Logs / temp
+# ----------------------------
+*.log
+*.tmp
+*.autosave
+
+# ----------------------------
+# Python (if tooling)
+# ----------------------------
+*.pyc
+__pycache__/
+
+# ----------------------------
+# Misc
+# ----------------------------
+*.core
+tags
+
+# Allow core folder if needed
+!core/
