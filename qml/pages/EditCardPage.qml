@@ -60,6 +60,7 @@ Page {
                 }
 
                 AppTextArea {
+                    id: frontField
                     Layout.fillWidth: true
                     text: root.frontText
                     animatedPlaceholder: "Question, word or phrase"
@@ -73,6 +74,7 @@ Page {
                 }
 
                 AppTextArea {
+                    id: backField
                     Layout.fillWidth: true
                     text: root.backText
                     animatedPlaceholder: "Answer or translation"

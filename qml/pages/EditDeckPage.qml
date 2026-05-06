@@ -54,12 +54,14 @@ Page {
                 }
 
                 AppTextField {
+                    id: titleField
                     Layout.fillWidth: true
                     text: root.flashcardController.currentDeck.title
                     animatedPlaceholder: "Deck title"
                 }
 
                 AppTextArea {
+                    id: subtitleField
                     Layout.fillWidth: true
                     text: root.flashcardController.currentDeck.subtitle
                     animatedPlaceholder: "Subtitle or description"

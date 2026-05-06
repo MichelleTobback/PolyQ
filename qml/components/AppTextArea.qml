@@ -18,7 +18,7 @@ TextArea {
     bottomPadding: topPadding
     leftPadding: 12
     rightPadding: 12
-
+    
     font.pixelSize: Theme.fontBody
     color: Theme.colors.textPrimary
 
