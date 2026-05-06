@@ -1,35 +1,47 @@
 import QtQuick
 
 QtObject {
-    readonly property color background: "#FFF6FA"
-    readonly property color backgroundTop: "#FFF8FB"
-    readonly property color backgroundBottom: "#F7EDFF"
 
-    readonly property color surface: "#FFF6FA"
-    readonly property color surfaceAlt: "#FFF8FB"
-    readonly property color surfacePressed: "#FBE8F0"
-    readonly property color border: "#F2D7E4"
+    // ===== BACKGROUND =====
+    readonly property color background: "#17141C"
+    readonly property color backgroundTop: "#1D1924"
+    readonly property color backgroundBottom: "#141018"
 
-    readonly property color primary: "#F48FB1"
-    readonly property color primaryHover: "#F6A3BE"
-    readonly property color primaryPressed: "#D96B93"
+    // ===== SURFACES =====
+    readonly property color surface: "#241F2B"
+    readonly property color surfaceAlt: "#2B2533"
+    readonly property color surfaceSoft: "#312A3A"
+    readonly property color surfacePressed: "#3A3244"
+    readonly property color surfaceDisabled: "#221D28"
 
-    readonly property color secondary: "#A78BFA"
-    readonly property color secondaryPressed: "#8B6EEA"
+    readonly property color border: "#3E3447"
+    readonly property color borderSoft: "#4A3E56"
 
-    readonly property color danger: "#EF6F8F"
-    readonly property color dangerPressed: "#D95779"
+    // ===== PRIMARY =====
+    readonly property color primary: "#F29DBB"
+    readonly property color primaryHover: "#F6AEC8"
+    readonly property color primaryPressed: "#D97C9F"
 
-    readonly property color warning: "#F4A261"
-    readonly property color warningPressed: "#D98B4D"
+    // ===== SECONDARY =====
+    readonly property color secondary: "#B7A8F2"
+    readonly property color secondaryPressed: "#9789DA"
 
-    readonly property color success: "#69B99D"
-    readonly property color successPressed: "#4E9E82"
+    // ===== STATUS =====
+    readonly property color danger: "#F08AA7"
+    readonly property color dangerPressed: "#D46C89"
 
-    readonly property color textPrimary: "#2B2024"
-    readonly property color textSecondary: "#8A6875"
-    readonly property color textMuted: "#B997A7"
+    readonly property color warning: "#F0B07A"
+    readonly property color warningPressed: "#D7955E"
+
+    readonly property color success: "#79C7AD"
+    readonly property color successPressed: "#5FAF95"
+
+    // ===== TEXT =====
+    readonly property color textPrimary: "#F5EEF5"
+    readonly property color textSecondary: "#C8B7C4"
+    readonly property color textMuted: "#8E7E8A"
     readonly property color textOnPrimary: "#FFFFFF"
 
-    readonly property color shadow: "#22000000"
+    // ===== EFFECTS =====
+    readonly property color shadow: "#50000000"
 }

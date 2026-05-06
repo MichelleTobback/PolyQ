@@ -50,6 +50,9 @@ qt_add_qml_module(appPolyQComponents
         qml/components/AppTabBar.qml
         qml/components/DeckCard.qml
         qml/components/FlashcardView.qml
+        qml/components/DeckOverviewTab.qml
+        qml/components/DeckStatsTab.qml
+        qml/components/DeckWordListTab.qml
 )
 
 set(qml_singletons

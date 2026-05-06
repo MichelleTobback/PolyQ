@@ -9,9 +9,9 @@ PolyQ::MockDeckRepository::MockDeckRepository()
 
 bool PolyQ::MockDeckRepository::Initialize()
 {
-    CreateDeck("Japanese Basics");
-    CreateDeck("French Verbs");
-    CreateDeck("Russian Alphabet");
+    CreateDeck({ "Japanese Basics", "Basic Japenese - English words."});
+    CreateDeck({ "French Verbs", "Basic French - English verbs."});
+    CreateDeck({ "Russian Alphabet", "Learn the Russian cyrillic alphabet."});
 
     CreateCard(0, "こんにちは", "Hello");
     CreateCard(0, "ありがとう", "Thank you");
@@ -29,6 +29,16 @@ bool PolyQ::MockDeckRepository::Initialize()
 std::vector<PolyQ::Deck> PolyQ::MockDeckRepository::GetAllDecks()
 {
     return m_decks;
+}
+
+bool PolyQ::MockDeckRepository::CreateDeck(const Deck& deck)
+{
+    Deck d{ deck };
+    d.id = m_nextId++;
+    d.cardCount = 0;
+
+    m_decks.push_back(d);
+    return true;
 }
 
 bool PolyQ::MockDeckRepository::CreateDeck(const QString& name)

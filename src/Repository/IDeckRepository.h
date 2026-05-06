@@ -15,6 +15,7 @@ namespace PolyQ
 		virtual bool Initialize() = 0;
 
 		virtual std::vector<Deck> GetAllDecks() = 0;
+		virtual bool CreateDeck(const Deck& deck) = 0;
 		virtual bool CreateDeck(const QString& name) = 0;
 		virtual bool DeleteDeck(int deckId) = 0;
 

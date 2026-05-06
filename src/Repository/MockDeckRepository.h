@@ -12,6 +12,7 @@ namespace PolyQ
         virtual bool Initialize() override;
 
         virtual std::vector<Deck> GetAllDecks() override;
+        virtual bool CreateDeck(const Deck& deck) override;
         virtual bool CreateDeck(const QString& name) override;
         virtual bool DeleteDeck(int deckId) override;
 

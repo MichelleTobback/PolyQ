@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+
 import PolyQ.Theme
 
 Item {
@@ -9,6 +10,18 @@ Item {
 
     property real radius: Theme.radiusCard
     property color color: Theme.colors.surface
+    property real padding: Theme.cardPadding
+
+    property bool autoWidthToContent: false
+    property bool autoHeightToContent: false
+
+    implicitWidth: autoWidthToContent
+        ? contentItem.implicitWidth + padding * 2
+        : 0
+
+    implicitHeight: autoHeightToContent
+        ? contentItem.implicitHeight + padding * 2
+        : 0
 
     Rectangle {
         id: card
@@ -31,6 +44,19 @@ Item {
 
     Item {
         id: contentItem
-        anchors.fill: parent
+
+        x: root.padding
+        y: root.padding
+
+        width: root.autoWidthToContent
+            ? implicitWidth
+            : Math.max(0, root.width - root.padding * 2)
+
+        height: root.autoHeightToContent
+            ? implicitHeight
+            : Math.max(0, root.height - root.padding * 2)
+
+        implicitWidth: children.length > 0 ? children[0].implicitWidth : 0
+        implicitHeight: children.length > 0 ? children[0].implicitHeight : 0
     }
 }
