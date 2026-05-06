@@ -150,12 +150,21 @@ void PolyQ::FlashcardController::updateCard(int cardId, const QString& front, co
 {
     if (m_selectedDeckId == -1)
         return;
-    
-    if (m_pRepository->UpdateCard(cardId, front.trimmed(), back.trimmed()))
-    {
-        m_cardModel.setCards(m_pRepository->GetCardsForDeck(m_selectedDeckId));
-        loadDecks();
-    }
+
+    const QString trimmedFront = front.trimmed();
+    const QString trimmedBack = back.trimmed();
+
+    if (trimmedFront.isEmpty() || trimmedBack.isEmpty())
+        return;
+
+    if (!m_pRepository->UpdateCard(cardId, trimmedFront, trimmedBack))
+        return;
+
+    loadCards(m_selectedDeckId);
+    loadDecks();
+
+    emit selectedDeckChanged();
+    emit cardChanged();
 }
 
 void PolyQ::FlashcardController::reviewCard(int rating)

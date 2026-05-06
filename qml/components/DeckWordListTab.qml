@@ -53,7 +53,7 @@ Item {
                     Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                     text: "✏"
 
-                    onClicked: root.editCard(model.id, model.front, model.back)
+                    onClicked: root.editCard(model.cardId, model.front, model.back)
                 }
             }
         }
