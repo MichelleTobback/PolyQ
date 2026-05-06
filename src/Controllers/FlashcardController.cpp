@@ -16,18 +16,36 @@ PolyQ::FlashcardController::~FlashcardController()
 
 }
 
-QString PolyQ::FlashcardController::front() const
+QVariantMap PolyQ::FlashcardController::currentCard() const
 {
     if (m_cardModel.isEmpty())
         return {};
-    return m_cardModel.cardAt(m_cardIndex).front;
+
+    const Flashcard card = m_cardModel.cardAt(m_cardIndex);
+
+    return {
+        { "id", card.id },
+        { "deckId", card.deckId },
+        { "front", card.front },
+        { "back", card.back }
+    };
 }
 
-QString PolyQ::FlashcardController::back() const
+QVariantMap PolyQ::FlashcardController::currentDeck() const
 {
-    if (m_cardModel.isEmpty())
+    if (m_DeckModel.isEmpty())
         return {};
-    return m_cardModel.cardAt(m_cardIndex).back;
+
+    const Deck deck = m_DeckModel.deckAt(m_selectedDeckId);
+
+    return {
+        { "id", deck.id },
+        { "title", deck.title },
+        { "subtitle", deck.subtitle },
+        { "cardCount", deck.cardCount },
+        { "dueCount", deck.dueCount },
+        { "enabled", deck.enabled }
+    };
 }
 
 bool PolyQ::FlashcardController::showingAnswer() const
@@ -38,11 +56,6 @@ bool PolyQ::FlashcardController::showingAnswer() const
 int PolyQ::FlashcardController::cardIndex() const
 {
     return m_cardIndex;
-}
-
-int PolyQ::FlashcardController::cardCount() const
-{
-    return m_cardModel.count();
 }
 
 void PolyQ::FlashcardController::showAnswer()
@@ -88,6 +101,7 @@ void PolyQ::FlashcardController::selectDeck(int deckId)
     emit selectedDeckChanged();
 
     loadCards(deckId);
+    nextCard();
 }
 
 void PolyQ::FlashcardController::createDeck(const QString& name)

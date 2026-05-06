@@ -16,11 +16,11 @@ namespace PolyQ
     {
         Q_OBJECT
 
-            Q_PROPERTY(QString front READ front NOTIFY cardChanged)
-            Q_PROPERTY(QString back READ back NOTIFY cardChanged)
+            Q_PROPERTY(QVariantMap currentCard READ currentCard NOTIFY cardChanged)
+            Q_PROPERTY(QVariantMap currentDeck READ currentDeck NOTIFY selectedDeckChanged)
+
             Q_PROPERTY(bool showingAnswer READ showingAnswer NOTIFY showingAnswerChanged)
             Q_PROPERTY(int cardIndex READ cardIndex NOTIFY cardChanged)
-            Q_PROPERTY(int cardCount READ cardCount CONSTANT)
             Q_PROPERTY(DeckModel* decks READ decks CONSTANT)
 
             Q_PROPERTY(FlashcardListModel* cards READ cards CONSTANT)
@@ -30,11 +30,10 @@ namespace PolyQ
         explicit FlashcardController(QObject* parent = nullptr);
         virtual ~FlashcardController();
 
-        QString front() const;
-        QString back() const;
+        QVariantMap currentCard() const;
+        QVariantMap currentDeck() const;
         bool showingAnswer() const;
         int cardIndex() const;
-        int cardCount() const;
 
         Q_INVOKABLE void showAnswer();
 
@@ -64,8 +63,8 @@ namespace PolyQ
         void loadCards(int deckId);
 
     private:
-        int m_selectedDeckId = 0;
-        int m_cardIndex = 0;
+        int m_selectedDeckId = -1;
+        int m_cardIndex = -1;
         bool m_showingAnswer = false;
         FlashcardListModel m_cardModel;
         DeckModel m_DeckModel;

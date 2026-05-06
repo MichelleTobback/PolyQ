@@ -9,9 +9,6 @@ import PolyQ.Controllers 1.0
 Page {
     id: root
 
-    signal openDeck()
-    signal openSettings()
-
     property FlashcardController flashcardController
 
     background: Rectangle {
@@ -35,7 +32,7 @@ Page {
                     text: "PolyQ"
                     font.pixelSize: Theme.fontTitle
                     font.bold: true
-                    color: Theme.colors.primary
+                    color: Theme.colors.textPrimary
                 }
 
                 Text {
@@ -43,11 +40,6 @@ Page {
                     font.pixelSize: Theme.fontBody
                     color: Theme.colors.textSecondary
                 }
-            }
-
-            AppIconButton {
-                text: "⚙"
-                onClicked: root.openSettings()
             }
         }
 

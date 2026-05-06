@@ -13,18 +13,15 @@ bool PolyQ::MockDeckRepository::Initialize()
     CreateDeck("French Verbs");
     CreateDeck("Russian Alphabet");
 
-    m_cards = {
-            { 1, 1, "こんにちは", "Hello" },
-            { 2, 1, "ありがとう", "Thank you" },
-            { 3, 1, "猫", "Cat" },
+    CreateCard(0, "こんにちは", "Hello");
+    CreateCard(0, "ありがとう", "Thank you");
+    CreateCard(0, "猫", "Cat");
 
-            { 4, 2, "Être", "To be" },
-            { 5, 2, "Avoir", "To have" },
+    CreateCard(1, "Être", "To be");
+    CreateCard(1, "Avoir", "To have");
 
-            { 6, 3, "А", "A" },
-            { 7, 3, "Б", "B" }
-    };
-    m_nextCardId = 8;
+    CreateCard(2, "А", "A");
+    CreateCard(2, "Б", "B");
 
     return true;
 }
@@ -75,12 +72,17 @@ std::vector<PolyQ::Flashcard> PolyQ::MockDeckRepository::GetCardsForDeck(int dec
 
 bool PolyQ::MockDeckRepository::CreateCard(int deckId, const QString& front, const QString& back)
 {
+    if (deckId >= m_decks.size())
+        return false;
+
     m_cards.push_back({
             m_nextCardId++,
             deckId,
             front,
             back
         });
+
+    ++m_decks[deckId].cardCount;
 
     return true;
 }

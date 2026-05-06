@@ -25,8 +25,8 @@ namespace PolyQ
         std::vector<Deck> m_decks;
         std::vector<Flashcard> m_cards;
 
-        int m_nextId = 1;
-        int m_nextCardId = 1;
+        int m_nextId = 0;
+        int m_nextCardId = 0;
 
         void UpdateCardCounts();
     };

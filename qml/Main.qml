@@ -8,8 +8,8 @@ import PolyQ.Controllers 1.0
 ApplicationWindow {
     id: window
 
-    width: 390
-    height: 844
+    width: 405
+    height: 900
     visible: true
     title: "PolyQ"
 

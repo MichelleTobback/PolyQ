@@ -11,8 +11,8 @@ Rectangle {
 
     property FlashcardController controller
 
-    property string front: root.controller.front;
-    property string back: root.controller.back;
+    property string front: root.controller.currentCard.front;
+    property string back: root.controller.currentCard.back;
     property bool showingAnswer: root.controller.showingAnswer;
 
     onClicked: root.controller.showAnswer()

@@ -107,6 +107,16 @@ namespace PolyQ
             return m_Decks[row];
         }
 
+        int count() const
+        {
+            return static_cast<int>(m_Decks.size());
+        }
+
+        bool isEmpty() const
+        {
+            return m_Decks.size() == 0;
+        }
+
     private:
         std::vector<Deck> m_Decks;
     };

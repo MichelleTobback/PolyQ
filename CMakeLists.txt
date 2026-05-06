@@ -46,6 +46,8 @@ qt_add_qml_module(appPolyQComponents
         qml/components/AppBackButton.qml
         qml/components/AppCard.qml
         qml/components/AppPage.qml
+        qml/components/AppTabButton.qml
+        qml/components/AppTabBar.qml
         qml/components/DeckCard.qml
         qml/components/FlashcardView.qml
 )
