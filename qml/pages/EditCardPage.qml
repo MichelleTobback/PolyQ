@@ -59,28 +59,10 @@ Page {
                     color: Theme.colors.textSecondary
                 }
 
-                TextArea {
-                    id: frontField
-
+                AppTextArea {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 120
-
                     text: root.frontText
-                    placeholderText: "Question, word or phrase"
-
-                    wrapMode: TextArea.Wrap
-                    font.pixelSize: Theme.fontBody
-                    color: Theme.colors.textPrimary
-
-                    horizontalAlignment: TextInput.AlignHCenter
-                    verticalAlignment: TextInput.AlignVCenter
-
-                    background: Rectangle {
-                        radius: Theme.radiusMedium
-                        color: Theme.colors.surfaceSoft
-                        border.width: 1
-                        border.color: frontField.activeFocus ? Theme.colors.primary : Theme.colors.border
-                    }
+                    animatedPlaceholder: "Question, word or phrase"
                 }
 
                 Text {
@@ -90,28 +72,10 @@ Page {
                     color: Theme.colors.textSecondary
                 }
 
-                TextArea {
-                    id: backField
-
+                AppTextArea {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 120
-
                     text: root.backText
-                    placeholderText: "Answer or translation"
-
-                    horizontalAlignment: TextInput.AlignHCenter
-                    verticalAlignment: TextInput.AlignVCenter
-
-                    wrapMode: TextArea.Wrap
-                    font.pixelSize: Theme.fontBody
-                    color: Theme.colors.textPrimary
-
-                    background: Rectangle {
-                        radius: Theme.radiusMedium
-                        color: Theme.colors.surfaceSoft
-                        border.width: 1
-                        border.color: backField.activeFocus ? Theme.colors.primary : Theme.colors.border
-                    }
+                    animatedPlaceholder: "Answer or translation"
                 }
             }
         }

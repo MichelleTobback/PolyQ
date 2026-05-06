@@ -53,50 +53,16 @@ Page {
                     color: Theme.colors.textSecondary
                 }
 
-                TextField {
-                    id: titleField
-
+                AppTextField {
                     Layout.fillWidth: true
                     text: root.flashcardController.currentDeck.title
-                    placeholderText: "Deck title"
-
-                    font.pixelSize: Theme.fontBody
-                    color: Theme.colors.textPrimary
-
-                    horizontalAlignment: TextInput.AlignHCenter
-                    verticalAlignment: TextInput.AlignVCenter
-
-                    background: Rectangle {
-                        implicitHeight: 44
-                        radius: Theme.radiusMedium
-                        color: Theme.colors.surfaceVariant
-                        border.width: 1
-                        border.color: titleField.activeFocus ? Theme.colors.primary : Theme.colors.border
-                    }
+                    animatedPlaceholder: "Deck title"
                 }
 
-                TextArea {
-                    id: subtitleField
-
+                AppTextArea {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 110
-
                     text: root.flashcardController.currentDeck.subtitle
-                    placeholderText: "Subtitle or description"
-
-                    wrapMode: TextArea.Wrap
-                    font.pixelSize: Theme.fontBody
-                    color: Theme.colors.textPrimary
-
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-
-                    background: Rectangle {
-                        radius: Theme.radiusMedium
-                        color: Theme.colors.surfaceVariant
-                        border.width: 1
-                        border.color: subtitleField.activeFocus ? Theme.colors.primary : Theme.colors.border
-                    }
+                    animatedPlaceholder: "Subtitle or description"
                 }
             }
         }
@@ -137,10 +103,15 @@ Page {
                         }
                     }
 
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
                     Switch {
                         id: enabledSwitch
 
                         checked: root.flashcardController.currentDeck.enabled
+                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
                         indicator: Rectangle {
                             implicitWidth: 52

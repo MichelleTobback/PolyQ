@@ -9,4 +9,15 @@ TabBar {
     background: Rectangle {
         color: "transparent"
     }
+
+    contentItem: ListView {
+        model: root.contentModel
+        currentIndex: root.currentIndex
+
+        spacing: root.spacing
+        orientation: ListView.Horizontal
+
+        boundsBehavior: Flickable.StopAtBounds
+        interactive: false
+    }
 }

@@ -48,6 +48,8 @@ qt_add_qml_module(appPolyQComponents
         qml/components/AppPage.qml
         qml/components/AppTabButton.qml
         qml/components/AppTabBar.qml
+        qml/components/AppTextArea.qml
+        qml/components/AppTextField.qml
         qml/components/DeckCard.qml
         qml/components/FlashcardView.qml
         qml/components/DeckOverviewTab.qml
