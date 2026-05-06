@@ -33,8 +33,26 @@ ApplicationWindow {
 
         DeckPage {
             flashcardController: flashController
+
             onBack: stack.pop()
             onStartReview: stack.push(reviewPageComponent)
+            onEditDeck: stack.push(editDeckComponent)
+
+            onAddCard: stack.push(editCardComponent, {
+                flashcardController: flashController,
+                cardId: -1,
+                frontText: "",
+                backText: ""
+            })
+
+            onEditCard: function(cardId, front, back) {
+                stack.push(editCardComponent, {
+                    flashcardController: flashController,
+                    cardId: cardId,
+                    frontText: front,
+                    backText: back
+                })
+            }
         }
     }
 
@@ -51,6 +69,24 @@ ApplicationWindow {
         id: settingsPageComponent
 
         SettingsPage {
+            onBack: stack.pop()
+        }
+    }
+
+    Component {
+        id: editDeckComponent
+
+        EditDeckPage {
+            flashcardController: flashController
+            onBack: stack.pop()
+        }
+    }
+
+    Component {
+        id: editCardComponent
+
+        EditCardPage {
+            flashcardController: flashController
             onBack: stack.pop()
         }
     }

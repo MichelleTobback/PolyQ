@@ -13,6 +13,9 @@ Page {
 
     signal back()
     signal startReview()
+    signal editDeck()
+    signal addCard()
+    signal editCard(int cardId, string front, string back)
 
     background: Rectangle {
         color: Theme.colors.background
@@ -36,6 +39,7 @@ Page {
 
             AppIconButton {
                 text: "✏"
+                onClicked: root.editDeck()
             }
         }
 
@@ -77,6 +81,10 @@ Page {
 
             DeckWordListTab {
                 flashcardController: root.flashcardController
+                onAddCard: root.addCard()
+                onEditCard: function(cardId, front, back) {
+                    root.editCard(cardId, front, back)
+                }
             }
 
             DeckStatsTab {}

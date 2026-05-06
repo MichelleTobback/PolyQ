@@ -15,6 +15,7 @@ namespace PolyQ
         virtual bool CreateDeck(const Deck& deck) override;
         virtual bool CreateDeck(const QString& name) override;
         virtual bool DeleteDeck(int deckId) override;
+        virtual bool UpdateDeck(int deckId, const QString& title, const QString& subtitle, bool enabled) override;
 
         virtual std::vector<Flashcard> GetCardsForDeck(int deckId) override;
         virtual bool CreateCard(int deckId, const QString& front, const QString& back) override;

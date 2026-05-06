@@ -82,6 +82,8 @@ qt_add_qml_module(appPolyQPages
         qml/pages/DeckPage.qml
         qml/pages/ReviewPage.qml
         qml/pages/SettingsPage.qml
+        qml/pages/EditDeckPage.qml
+        qml/pages/EditCardPage.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

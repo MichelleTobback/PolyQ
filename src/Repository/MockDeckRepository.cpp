@@ -67,6 +67,22 @@ bool PolyQ::MockDeckRepository::DeleteDeck(int deckId)
     return true;
 }
 
+bool PolyQ::MockDeckRepository::UpdateDeck(int deckId, const QString& title, const QString& subtitle, bool enabled)
+{
+    for (Deck& deck : m_decks)
+    {
+        if (deck.id == deckId)
+        {
+            deck.title = title;
+            deck.subtitle = subtitle;
+            deck.enabled = enabled;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 std::vector<PolyQ::Flashcard> PolyQ::MockDeckRepository::GetCardsForDeck(int deckId)
 {
     std::vector<Flashcard> result;

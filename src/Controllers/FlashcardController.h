@@ -23,7 +23,7 @@ namespace PolyQ
             Q_PROPERTY(int cardIndex READ cardIndex NOTIFY cardChanged)
             Q_PROPERTY(DeckModel* decks READ decks CONSTANT)
 
-            Q_PROPERTY(FlashcardListModel* cards READ cards CONSTANT)
+            Q_PROPERTY(FlashcardListModel* cards READ cards NOTIFY selectedDeckChanged)
             Q_PROPERTY(int selectedDeckId READ selectedDeckId NOTIFY selectedDeckChanged)
 
     public:
@@ -45,7 +45,9 @@ namespace PolyQ
         Q_INVOKABLE void loadDecks();
         Q_INVOKABLE void selectDeck(int deckId);
         Q_INVOKABLE void createDeck(const QString& name);
+        Q_INVOKABLE void updateDeck(const QString& title, const QString& subtitle, bool enabled);
         Q_INVOKABLE void createCard(const QString& front, const QString& back);
+        Q_INVOKABLE void updateCard(int cardId, const QString& front, const QString& back);
 
         DeckModel* decks() { return &m_DeckModel; }
         FlashcardListModel* cards() { return &m_cardModel; }
@@ -57,6 +59,7 @@ namespace PolyQ
         void showingAnswerChanged();
 
         void selectedDeckChanged();
+
     private:
         void nextCard();
         void reviewCard(int rating);

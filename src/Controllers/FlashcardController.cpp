@@ -115,6 +115,20 @@ void PolyQ::FlashcardController::createDeck(const QString& name)
         loadDecks();
 }
 
+void PolyQ::FlashcardController::updateDeck(const QString& title, const QString& subtitle, bool enabled)
+{
+    if (m_selectedDeckId < 0)
+        return;
+
+    if (!m_pRepository->UpdateDeck(m_selectedDeckId, title, subtitle, enabled))
+        return;
+
+    loadDecks();
+    selectDeck(m_selectedDeckId);
+
+    emit selectedDeckChanged();
+}
+
 void PolyQ::FlashcardController::createCard(const QString& front, const QString& back)
 {
     if (m_selectedDeckId == -1)
@@ -123,7 +137,21 @@ void PolyQ::FlashcardController::createCard(const QString& front, const QString&
     if (front.trimmed().isEmpty() || back.trimmed().isEmpty())
         return;
 
-    if (m_pRepository->CreateCard(m_selectedDeckId, front.trimmed(), back.trimmed()))
+    if (!m_pRepository->CreateCard(m_selectedDeckId, front.trimmed(), back.trimmed()))
+        return;
+
+    m_cardModel.setCards(m_pRepository->GetCardsForDeck(m_selectedDeckId));
+    loadDecks();
+
+    emit selectedDeckChanged();
+}
+
+void PolyQ::FlashcardController::updateCard(int cardId, const QString& front, const QString& back)
+{
+    if (m_selectedDeckId == -1)
+        return;
+    
+    if (m_pRepository->UpdateCard(cardId, front.trimmed(), back.trimmed()))
     {
         m_cardModel.setCards(m_pRepository->GetCardsForDeck(m_selectedDeckId));
         loadDecks();
