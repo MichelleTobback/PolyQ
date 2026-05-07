@@ -18,25 +18,8 @@ Page {
     default property alias content: contentColumn.data
     property alias headerRight: headerRightContainer.data
 
-    background: Loader {
-        sourceComponent: Theme.colors.backgroundType === 1
-                         ? solidBackgroundComponent
-                         : animatedBackgroundComponent
-    }
-
-    Component {
-        id: solidBackgroundComponent
-
-        Rectangle {
-            color: Theme.colors.background
-        }
-    }
-
-    Component {
-        id: animatedBackgroundComponent
-
-        PageBackground {
-        }
+    background: Rectangle {
+        color: "transparent"
     }
 
     ColumnLayout {

@@ -24,6 +24,11 @@ qt_add_executable(appPolyQ
     src/Repository/IDeckRepository.h
     src/Repository/MockDeckRepository.h
     src/Repository/MockDeckRepository.cpp
+
+    src/Review/ReviewScheduler.h
+    src/Review/ReviewScheduler.cpp
+    src/Review/ReviewSession.h
+    src/Review/ReviewSession.cpp
 )
 
 qt_add_qml_module(appPolyQ

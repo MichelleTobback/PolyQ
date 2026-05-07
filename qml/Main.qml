@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 
 import PolyQ.Pages
+import PolyQ.Components
+import PolyQ.Theme
 
 import PolyQ.Controllers 1.0
 
@@ -15,7 +17,14 @@ ApplicationWindow {
 
     FlashcardController {
     id: flashController
-}
+    }
+
+    Loader {
+        anchors.fill: parent
+        sourceComponent: Theme.colors.backgroundType === 1
+            ? solidBackgroundComponent
+            : animatedBackgroundComponent
+    }
 
     StackView {
         id: stack
@@ -88,6 +97,21 @@ ApplicationWindow {
         EditCardPage {
             flashcardController: flashController
             onBack: stack.pop()
+        }
+    }
+
+    Component {
+        id: solidBackgroundComponent
+
+        Rectangle {
+            color: Theme.colors.background
+        }
+    }
+
+    Component {
+        id: animatedBackgroundComponent
+
+        PageBackground {
         }
     }
 }

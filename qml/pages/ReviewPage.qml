@@ -26,9 +26,9 @@ AppPage {
         }
 
         Text {
-            text: (root.flashcardController.cardIndex + 1)
+            text: (root.flashcardController.reviewedCount)
                   + " / "
-                  + root.flashcardController.currentDeck.cardCount
+                  + root.flashcardController.reviewTotalCount
 
             font.pixelSize: Theme.fontBody
             color: Theme.colors.textSecondary

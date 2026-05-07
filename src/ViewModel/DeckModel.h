@@ -19,6 +19,7 @@ namespace PolyQ
             IdRole = Qt::UserRole + 1,
             TitleRole,
             SubtitleRole,
+            CardCountRole,
             DueCountRole,
             EnabledRole
         };
@@ -105,6 +106,47 @@ namespace PolyQ
                 return {};
 
             return m_Decks[row];
+        }
+
+        void updateDeck(const Deck& updatedDeck)
+        {
+            for (int row = 0; row < m_Decks.size(); ++row)
+            {
+                if (m_Decks[row].id != updatedDeck.id)
+                    continue;
+
+                m_Decks[row] = updatedDeck;
+
+                const QModelIndex index = createIndex(row, 0);
+
+                emit dataChanged(index, index, {
+                    TitleRole,
+                    SubtitleRole,
+                    CardCountRole,
+                    DueCountRole,
+                    EnabledRole
+                    });
+
+                return;
+            }
+        }
+
+        void adjustDueCount(int deckId, int delta)
+        {
+            if (delta == 0)
+                return;
+
+            for (int row = 0; row < m_Decks.size(); ++row)
+            {
+                if (m_Decks[row].id != deckId)
+                    continue;
+
+                m_Decks[row].dueCount = std::max(0, m_Decks[row].dueCount + delta);
+
+                const QModelIndex index = createIndex(row, 0);
+                emit dataChanged(index, index, { DueCountRole });
+                return;
+            }
         }
 
         int count() const

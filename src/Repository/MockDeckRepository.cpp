@@ -1,17 +1,16 @@
 #include "MockDeckRepository.h"
 
-#include <vector>
+#include <QDateTime>
 
-PolyQ::MockDeckRepository::MockDeckRepository()
-{
-    
-}
+#include <algorithm>
+
+PolyQ::MockDeckRepository::MockDeckRepository() = default;
 
 bool PolyQ::MockDeckRepository::Initialize()
 {
-    CreateDeck({ "Japanese Basics", "Basic Japenese - English words."});
-    CreateDeck({ "French Verbs", "Basic French - English verbs."});
-    CreateDeck({ "Russian Alphabet", "Learn the Russian cyrillic alphabet."});
+    CreateDeck({ "Japanese Basics", "Basic Japanese - English words." });
+    CreateDeck({ "French Verbs", "Basic French - English verbs." });
+    CreateDeck({ "Russian Alphabet", "Learn the Russian Cyrillic alphabet." });
 
     CreateCard(0, "こんにちは", "Hello");
     CreateCard(0, "ありがとう", "Thank you");
@@ -28,59 +27,83 @@ bool PolyQ::MockDeckRepository::Initialize()
 
 std::vector<PolyQ::Deck> PolyQ::MockDeckRepository::GetAllDecks()
 {
-    return m_decks;
+    std::vector<Deck> result;
+    result.reserve(m_decks.size());
+
+    for (const Deck& deck : m_decks)
+        result.push_back(BuildDeckSummary(deck));
+
+    return result;
+}
+
+std::optional<PolyQ::Deck> PolyQ::MockDeckRepository::GetDeckById(int deckId)
+{
+    const auto it = m_deckIndexById.find(deckId);
+
+    if (it == m_deckIndexById.end())
+        return std::nullopt;
+
+    return BuildDeckSummary(m_decks[it->second]);
 }
 
 bool PolyQ::MockDeckRepository::CreateDeck(const Deck& deck)
 {
-    Deck d{ deck };
-    d.id = m_nextId++;
-    d.cardCount = 0;
+    Deck newDeck = deck;
+    newDeck.id = m_nextId++;
+    newDeck.cardCount = 0;
+    newDeck.dueCount = 0;
 
-    m_decks.push_back(d);
+    m_deckIndexById[newDeck.id] = m_decks.size();
+    m_decks.push_back(newDeck);
+
     return true;
 }
 
 bool PolyQ::MockDeckRepository::CreateDeck(const QString& name)
 {
     Deck deck;
-    deck.id = m_nextId++;
     deck.title = name;
-    deck.cardCount = 0;
-
-    m_decks.push_back(deck);
-    return true;
+    return CreateDeck(deck);
 }
 
 bool PolyQ::MockDeckRepository::DeleteDeck(int deckId)
 {
-    m_cards.erase(std::remove_if(m_cards.begin(), m_cards.end(), [deckId](const Flashcard& card)
-        {
-            return card.deckId == deckId;
-        }), m_cards.end());
+    const auto deckIt = m_deckIndexById.find(deckId);
 
-    m_decks.erase(std::remove_if(m_decks.begin(), m_decks.end(), [deckId](const Deck& deck)
-        {
-            return deck.id == deckId;
-        }), m_decks.end());
+    if (deckIt == m_deckIndexById.end())
+        return false;
 
+    m_decks.erase(m_decks.begin() + static_cast<std::ptrdiff_t>(deckIt->second));
+
+    m_cards.erase(
+        std::remove_if(
+            m_cards.begin(),
+            m_cards.end(),
+            [deckId](const Flashcard& card)
+            {
+                return card.deckId == deckId;
+            }
+        ),
+        m_cards.end()
+    );
+
+    RebuildIndexes();
     return true;
 }
 
 bool PolyQ::MockDeckRepository::UpdateDeck(int deckId, const QString& title, const QString& subtitle, bool enabled)
 {
-    for (Deck& deck : m_decks)
-    {
-        if (deck.id == deckId)
-        {
-            deck.title = title;
-            deck.subtitle = subtitle;
-            deck.enabled = enabled;
-            return true;
-        }
-    }
+    const auto it = m_deckIndexById.find(deckId);
 
-    return false;
+    if (it == m_deckIndexById.end())
+        return false;
+
+    Deck& deck = m_decks[it->second];
+    deck.title = title;
+    deck.subtitle = subtitle;
+    deck.enabled = enabled;
+
+    return true;
 }
 
 std::vector<PolyQ::Flashcard> PolyQ::MockDeckRepository::GetCardsForDeck(int deckId)
@@ -96,58 +119,115 @@ std::vector<PolyQ::Flashcard> PolyQ::MockDeckRepository::GetCardsForDeck(int dec
     return result;
 }
 
+std::vector<PolyQ::Flashcard> PolyQ::MockDeckRepository::GetDueCardsForDeck(int deckId)
+{
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+
+    std::vector<Flashcard> result;
+
+    for (const Flashcard& card : m_cards)
+    {
+        if (card.deckId == deckId && card.dueAt <= now)
+            result.push_back(card);
+    }
+
+    return result;
+}
+
 bool PolyQ::MockDeckRepository::CreateCard(int deckId, const QString& front, const QString& back)
 {
-    if (deckId >= m_decks.size())
+    if (!HasDeck(deckId))
         return false;
 
-    m_cards.push_back({
-            m_nextCardId++,
-            deckId,
-            front,
-            back
-        });
+    Flashcard card;
+    card.id = m_nextCardId++;
+    card.deckId = deckId;
+    card.front = front;
+    card.back = back;
 
-    ++m_decks[deckId].cardCount;
+    m_cardIndexById[card.id] = m_cards.size();
+    m_cards.push_back(card);
 
     return true;
 }
 
 bool PolyQ::MockDeckRepository::UpdateCard(int cardId, const QString& front, const QString& back)
 {
-    for (Flashcard& card : m_cards)
-    {
-        if (card.id == cardId)
-        {
-            card.front = front;
-            card.back = back;
-            return true;
-        }
-    }
+    const auto it = m_cardIndexById.find(cardId);
 
-    return false;
-}
+    if (it == m_cardIndexById.end())
+        return false;
 
-bool PolyQ::MockDeckRepository::DeleteCard(int cardId)
-{
-    m_cards.erase(std::remove_if(m_cards.begin(), m_cards.end(), [cardId](const Flashcard& card)
-        {
-            return card.id == cardId;
-        }), m_cards.end());
+    Flashcard& card = m_cards[it->second];
+    card.front = front;
+    card.back = back;
 
     return true;
 }
 
-void PolyQ::MockDeckRepository::UpdateCardCounts()
+bool PolyQ::MockDeckRepository::UpdateCard(const Flashcard& card)
 {
-    for (Deck& deck : m_decks)
-    {
-        deck.cardCount = 0;
+    const auto it = m_cardIndexById.find(card.id);
 
-        for (const Flashcard& card : m_cards)
-        {
-            if (card.deckId == deck.id)
-                deck.cardCount++;
-        }
+    if (it == m_cardIndexById.end())
+        return false;
+
+    m_cards[it->second] = card;
+    return true;
+}
+
+bool PolyQ::MockDeckRepository::DeleteCard(int cardId)
+{
+    const auto it = m_cardIndexById.find(cardId);
+
+    if (it == m_cardIndexById.end())
+        return false;
+
+    m_cards.erase(m_cards.begin() + static_cast<std::ptrdiff_t>(it->second));
+
+    RebuildIndexes();
+    return true;
+}
+
+bool PolyQ::MockDeckRepository::HasDeck(int deckId) const
+{
+    return m_deckIndexById.find(deckId) != m_deckIndexById.end();
+}
+
+void PolyQ::MockDeckRepository::CalculateDeckStatistics(int deckId, int& cardCount, int& dueCount) const
+{
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+
+    cardCount = 0;
+    dueCount = 0;
+
+    for (const Flashcard& card : m_cards)
+    {
+        if (card.deckId != deckId)
+            continue;
+
+        ++cardCount;
+
+        if (card.dueAt <= now)
+            ++dueCount;
     }
+}
+
+PolyQ::Deck PolyQ::MockDeckRepository::BuildDeckSummary(const Deck& deck) const
+{
+    Deck summary = deck;
+    CalculateDeckStatistics(deck.id, summary.cardCount, summary.dueCount);
+    return summary;
+}
+
+void PolyQ::MockDeckRepository::RebuildIndexes()
+{
+    m_deckIndexById.clear();
+    m_cardIndexById.clear();
+
+    for (std::size_t i = 0; i < m_decks.size(); ++i)
+        m_deckIndexById[m_decks[i].id] = i;
+
+    for (std::size_t i = 0; i < m_cards.size(); ++i)
+        m_cardIndexById[m_cards[i].id] = i;
 }

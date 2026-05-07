@@ -11,29 +11,26 @@ PolyQ::FlashcardController::FlashcardController(QObject* parent)
     loadDecks();
 }
 
-PolyQ::FlashcardController::~FlashcardController()
-{
-
-}
+PolyQ::FlashcardController::~FlashcardController() = default;
 
 QVariantMap PolyQ::FlashcardController::currentCard() const
 {
-    if (m_cardModel.isEmpty())
+    const auto card = m_reviewSession.CurrentCard();
+
+    if (!card.has_value())
         return {};
 
-    const Flashcard card = m_cardModel.cardAt(m_cardIndex);
-
     return {
-        { "id", card.id },
-        { "deckId", card.deckId },
-        { "front", card.front },
-        { "back", card.back }
+        { "id", card->id },
+        { "deckId", card->deckId },
+        { "front", card->front },
+        { "back", card->back }
     };
 }
 
 QVariantMap PolyQ::FlashcardController::currentDeck() const
 {
-    if (m_DeckModel.isEmpty())
+    if (m_selectedDeckId < 0)
         return {};
 
     const Deck deck = m_DeckModel.deckAt(m_selectedDeckId);
@@ -98,10 +95,13 @@ void PolyQ::FlashcardController::selectDeck(int deckId)
         return;
 
     m_selectedDeckId = deckId;
-    emit selectedDeckChanged();
 
     loadCards(deckId);
-    nextCard();
+    startReviewSession(deckId);
+
+    emit selectedDeckChanged();
+    emit cardChanged();
+    emit showingAnswerChanged();
 }
 
 void PolyQ::FlashcardController::createDeck(const QString& name)
@@ -124,31 +124,36 @@ void PolyQ::FlashcardController::updateDeck(const QString& title, const QString&
         return;
 
     loadDecks();
-    selectDeck(m_selectedDeckId);
 
     emit selectedDeckChanged();
 }
 
 void PolyQ::FlashcardController::createCard(const QString& front, const QString& back)
 {
-    if (m_selectedDeckId == -1)
+    if (m_selectedDeckId < 0)
         return;
 
-    if (front.trimmed().isEmpty() || back.trimmed().isEmpty())
+    const QString trimmedFront = front.trimmed();
+    const QString trimmedBack = back.trimmed();
+
+    if (trimmedFront.isEmpty() || trimmedBack.isEmpty())
         return;
 
-    if (!m_pRepository->CreateCard(m_selectedDeckId, front.trimmed(), back.trimmed()))
+    if (!m_pRepository->CreateCard(m_selectedDeckId, trimmedFront, trimmedBack))
         return;
 
-    m_cardModel.setCards(m_pRepository->GetCardsForDeck(m_selectedDeckId));
+    loadCards(m_selectedDeckId);
+    startReviewSession(m_selectedDeckId);
     loadDecks();
 
     emit selectedDeckChanged();
+    emit cardChanged();
+    emit showingAnswerChanged();
 }
 
 void PolyQ::FlashcardController::updateCard(int cardId, const QString& front, const QString& back)
 {
-    if (m_selectedDeckId == -1)
+    if (m_selectedDeckId < 0)
         return;
 
     const QString trimmedFront = front.trimmed();
@@ -161,17 +166,31 @@ void PolyQ::FlashcardController::updateCard(int cardId, const QString& front, co
         return;
 
     loadCards(m_selectedDeckId);
+    startReviewSession(m_selectedDeckId);
     loadDecks();
 
     emit selectedDeckChanged();
     emit cardChanged();
+    emit showingAnswerChanged();
 }
 
 void PolyQ::FlashcardController::reviewCard(int rating)
 {
-    Q_UNUSED(rating);
+    const ReviewRating reviewRating = static_cast<ReviewRating>(rating);
 
-    nextCard();
+    const auto updatedCard = m_reviewSession.SubmitRating(reviewRating);
+    if (!updatedCard.has_value())
+        return;
+
+    m_pRepository->UpdateCard(updatedCard.value());
+
+    if (reviewRating != ReviewRating::Again)
+    {
+        m_DeckModel.adjustDueCount(m_selectedDeckId, -1);
+        emit reviewProgressChanged();
+    }
+
+    updateCurrentCardFromSession();
 }
 
 void PolyQ::FlashcardController::loadCards(int deckId)
@@ -179,14 +198,31 @@ void PolyQ::FlashcardController::loadCards(int deckId)
     m_cardModel.setCards(m_pRepository->GetCardsForDeck(deckId));
 }
 
-void PolyQ::FlashcardController::nextCard()
+void PolyQ::FlashcardController::startReviewSession(int deckId)
 {
-    if (m_cardModel.isEmpty())
-        return;
+    const std::vector<Flashcard> dueCards =
+        m_pRepository->GetDueCardsForDeck(deckId);
 
-    m_cardIndex = (m_cardIndex + 1) % m_cardModel.count();
+    m_reviewSession.Start(dueCards);
+
+    m_cardIndex = m_reviewSession.HasCards() ? 0 : -1;
     m_showingAnswer = false;
+}
+
+void PolyQ::FlashcardController::updateCurrentCardFromSession()
+{
+    m_showingAnswer = false;
+
+    if (!m_reviewSession.HasCards())
+    {
+        m_cardIndex = -1;
+    }
+    else
+    {
+        ++m_cardIndex;
+    }
 
     emit cardChanged();
     emit showingAnswerChanged();
+    emit selectedDeckChanged();
 }

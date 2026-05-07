@@ -112,7 +112,7 @@ Item {
                         }
 
                         StatTile {
-                            value: root.flashcardController.currentDeck.cardCount
+                            value: root.flashcardController.currentDeck.dueCount
                             label: "Cards"
                             labelSize: Theme.fontBody
                         }

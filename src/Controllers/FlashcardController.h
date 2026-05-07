@@ -2,13 +2,13 @@
 
 #include <QObject>
 #include <QString>
-#include <QVector>
+#include <QVariantMap>
 #include <memory>
 
-#include "../ViewModel/FlashcardListModel.h"
-
 #include "../Model/Flashcard.h"
+#include "../ViewModel/FlashcardListModel.h"
 #include "../ViewModel/DeckModel.h"
+#include "../Review/ReviewSession.h"
 
 namespace PolyQ
 {
@@ -21,19 +21,29 @@ namespace PolyQ
 
             Q_PROPERTY(bool showingAnswer READ showingAnswer NOTIFY showingAnswerChanged)
             Q_PROPERTY(int cardIndex READ cardIndex NOTIFY cardChanged)
-            Q_PROPERTY(DeckModel* decks READ decks CONSTANT)
 
+            Q_PROPERTY(DeckModel* decks READ decks CONSTANT)
             Q_PROPERTY(FlashcardListModel* cards READ cards NOTIFY selectedDeckChanged)
             Q_PROPERTY(int selectedDeckId READ selectedDeckId NOTIFY selectedDeckChanged)
 
+            Q_PROPERTY(int reviewedCount READ reviewedCount NOTIFY reviewProgressChanged)
+            Q_PROPERTY(int reviewTotalCount READ reviewTotalCount NOTIFY reviewProgressChanged)
+
     public:
         explicit FlashcardController(QObject* parent = nullptr);
-        virtual ~FlashcardController();
+        ~FlashcardController() override;
 
         QVariantMap currentCard() const;
         QVariantMap currentDeck() const;
         bool showingAnswer() const;
         int cardIndex() const;
+
+        DeckModel* decks() { return &m_DeckModel; }
+        FlashcardListModel* cards() { return &m_cardModel; }
+        int selectedDeckId() const { return m_selectedDeckId; }
+
+        int reviewedCount() const { return m_reviewSession.ReviewedCount(); }
+        int reviewTotalCount() const { return m_reviewSession.TotalCount(); }
 
         Q_INVOKABLE void showAnswer();
 
@@ -49,28 +59,27 @@ namespace PolyQ
         Q_INVOKABLE void createCard(const QString& front, const QString& back);
         Q_INVOKABLE void updateCard(int cardId, const QString& front, const QString& back);
 
-        DeckModel* decks() { return &m_DeckModel; }
-        FlashcardListModel* cards() { return &m_cardModel; }
-
-        int selectedDeckId() const { return m_selectedDeckId; }
-
     signals:
         void cardChanged();
         void showingAnswerChanged();
-
         void selectedDeckChanged();
+        void reviewProgressChanged();
 
     private:
-        void nextCard();
         void reviewCard(int rating);
         void loadCards(int deckId);
+        void startReviewSession(int deckId);
+        void updateCurrentCardFromSession();
 
     private:
         int m_selectedDeckId = -1;
         int m_cardIndex = -1;
         bool m_showingAnswer = false;
+
         FlashcardListModel m_cardModel;
         DeckModel m_DeckModel;
+
         std::unique_ptr<class IDeckRepository> m_pRepository;
+        ReviewSession m_reviewSession;
     };
 }
