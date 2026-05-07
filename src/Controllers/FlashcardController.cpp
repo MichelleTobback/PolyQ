@@ -206,8 +206,11 @@ void PolyQ::FlashcardController::reviewCard(int rating)
 
     if (result.shouldPersist())
     {
-        if (m_pRepository->UpdateCard(result.updatedCard.value()))
+        const Flashcard& updatedCard = result.updatedCard.value();
+
+        if (m_pRepository->UpdateCard(updatedCard))
         {
+            m_cardModel.updateCard(updatedCard);
             refreshSelectedDeck();
         }
     }

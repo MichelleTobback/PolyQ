@@ -24,13 +24,16 @@ ColumnLayout {
         visible: root.flashcardController.showingAnswer
 
         Layout.fillWidth: true
-        spacing: 8
+        spacing: 6
 
         AppButton {
             text: "Again"
 
             buttonColor: Theme.colors.danger
             pressedColor: Theme.colors.dangerPressed
+            textSize: Theme.fontSmall
+
+            padding: 0
 
             Layout.fillWidth: true
 
@@ -42,6 +45,9 @@ ColumnLayout {
 
             buttonColor: Theme.colors.warning
             pressedColor: Theme.colors.warningPressed
+            textSize: Theme.fontSmall
+
+            padding: 0
 
             Layout.fillWidth: true
 
@@ -52,6 +58,8 @@ ColumnLayout {
             text: "Good"
 
             Layout.fillWidth: true
+            textSize: Theme.fontSmall
+            padding: 0
 
             onClicked: root.flashcardController.reviewGood()
         }
@@ -61,6 +69,8 @@ ColumnLayout {
 
             buttonColor: Theme.colors.success
             pressedColor: Theme.colors.successPressed
+            textSize: Theme.fontSmall
+            padding: 0
 
             Layout.fillWidth: true
 

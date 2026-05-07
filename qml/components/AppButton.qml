@@ -10,6 +10,8 @@ Button {
     property color pressedColor: Theme.colors.primaryPressed
     property color dissabledColor: Theme.colors.surfaceDisabled
     property color textColor: Theme.colors.textOnPrimary
+    property int textSize: Theme.fontBody
+    property int minimumTextSize: 10
 
     height: Theme.buttonHeight
 
@@ -24,6 +26,7 @@ Button {
 
     background: Rectangle {
         radius: Theme.radiusMedium
+
         color: root.enabled
                ? root.down ? root.pressedColor : root.buttonColor
                : root.dissabledColor
@@ -37,11 +40,22 @@ Button {
 
     contentItem: Text {
         text: root.text
-        color: root.enabled ? root.textColor : Theme.colors.textMuted
-        font.pixelSize: Theme.fontBody
+
+        color: root.enabled
+               ? root.textColor
+               : Theme.colors.textMuted
+
         font.bold: true
+
+        font.pixelSize: root.textSize
+        fontSizeMode: Text.Fit
+        minimumPixelSize: root.minimumTextSize
+
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
+
+        anchors.fill: parent
+
+        elide: Text.ElideNone
     }
 }

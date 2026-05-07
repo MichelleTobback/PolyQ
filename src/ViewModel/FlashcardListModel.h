@@ -12,12 +12,13 @@ namespace PolyQ
         Q_OBJECT
 
     public:
-        enum Role
+        enum Roles
         {
             IdRole = Qt::UserRole + 1,
             DeckIdRole,
             FrontRole,
-            BackRole
+            BackRole,
+            DueAtRole
         };
 
         explicit FlashcardListModel(QObject* parent = nullptr);
@@ -27,6 +28,7 @@ namespace PolyQ
         QHash<int, QByteArray> roleNames() const override;
 
         void setCards(std::vector<Flashcard> cards);
+        void updateCard(const Flashcard& card);
 
         Flashcard cardAt(int row) const;
         int count() const;

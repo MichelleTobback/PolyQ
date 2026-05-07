@@ -35,6 +35,8 @@ QVariant PolyQ::FlashcardListModel::data(const QModelIndex& index, int role) con
         return card.front;
     case BackRole:
         return card.back;
+    case DueAtRole:
+        return card.dueAt;
     default:
         return {};
     }
@@ -46,7 +48,8 @@ QHash<int, QByteArray> PolyQ::FlashcardListModel::roleNames() const
         { IdRole, "cardId" },
         { DeckIdRole, "deckId" },
         { FrontRole, "front" },
-        { BackRole, "back" }
+        { BackRole, "back" },
+        { DueAtRole, "dueAt" }
     };
 }
 
@@ -55,6 +58,31 @@ void PolyQ::FlashcardListModel::setCards(std::vector<Flashcard> cards)
     beginResetModel();
     m_cards = std::move(cards);
     endResetModel();
+}
+
+void PolyQ::FlashcardListModel::updateCard(const Flashcard& card)
+{
+    for (int row = 0; row < static_cast<int>(m_cards.size()); ++row)
+    {
+        if (m_cards[row].id != card.id)
+            continue;
+
+        m_cards[row] = card;
+
+        const QModelIndex modelIndex = index(row);
+
+        emit dataChanged(
+            modelIndex,
+            modelIndex,
+            {
+                FrontRole,
+                BackRole,
+                DueAtRole
+            }
+        );
+
+        return;
+    }
 }
 
 PolyQ::Flashcard PolyQ::FlashcardListModel::cardAt(int row) const
