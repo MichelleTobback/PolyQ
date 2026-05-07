@@ -4,7 +4,7 @@ project(PolyQ VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
+find_package(Qt6 REQUIRED COMPONENTS Quick Sql)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
@@ -24,6 +24,8 @@ qt_add_executable(appPolyQ
     src/Repository/IDeckRepository.h
     src/Repository/MockDeckRepository.h
     src/Repository/MockDeckRepository.cpp
+    src/Repository/SqlDeckRepository.h
+    src/Repository/SqlDeckRepository.cpp
 
     src/Review/ReviewScheduler.h
     src/Review/ReviewScheduler.cpp
@@ -66,6 +68,8 @@ qt_add_qml_module(appPolyQComponents
         qml/components/DeckStatsTab.qml
         qml/components/DeckWordListTab.qml
         qml/components/PageBackground.qml
+        qml/components/RatingReviewControls.qml
+        qml/components/EndlessReviewControls.qml
 )
 
 set(qml_singletons
@@ -112,6 +116,7 @@ set_target_properties(appPolyQ PROPERTIES
 
 target_link_libraries(appPolyQ
     PRIVATE Qt6::Quick
+    PRIVATE Qt6::Sql
 )
 
 install(TARGETS appPolyQ

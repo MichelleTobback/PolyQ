@@ -1,12 +1,19 @@
 #include "FlashcardController.h"
 
-#include "../Repository/MockDeckRepository.h"
+#include "../Repository/SqlDeckRepository.h"
 
 PolyQ::FlashcardController::FlashcardController(QObject* parent)
     : QObject(parent)
 {
-    m_pRepository = std::make_unique<MockDeckRepository>();
+    m_pRepository = std::make_unique<SqlDeckRepository>();
     m_pRepository->Initialize();
+
+    connect(&m_dueRefreshTimer, &QTimer::timeout, this, [this]()
+        {
+            refreshSelectedDeck();
+        });
+
+    m_dueRefreshTimer.start(60 * 1000);
 
     loadDecks();
 }
@@ -33,15 +40,18 @@ QVariantMap PolyQ::FlashcardController::currentDeck() const
     if (m_selectedDeckId < 0)
         return {};
 
-    const Deck deck = m_DeckModel.deckAt(m_selectedDeckId);
+    const std::optional<Deck> deck = m_DeckModel.deckById(m_selectedDeckId);
+
+    if (!deck.has_value())
+        return {};
 
     return {
-        { "id", deck.id },
-        { "title", deck.title },
-        { "subtitle", deck.subtitle },
-        { "cardCount", deck.cardCount },
-        { "dueCount", deck.dueCount },
-        { "enabled", deck.enabled }
+        { "id", deck->id },
+        { "title", deck->title },
+        { "subtitle", deck->subtitle },
+        { "cardCount", deck->cardCount },
+        { "dueCount", deck->dueCount },
+        { "enabled", deck->enabled }
     };
 }
 
@@ -62,6 +72,20 @@ void PolyQ::FlashcardController::showAnswer()
 
     m_showingAnswer = true;
     emit showingAnswerChanged();
+}
+
+void PolyQ::FlashcardController::startDueReview()
+{
+    m_reviewSettings.mode = ReviewSessionMode::SpacedRepetition;
+    startReviewSession(m_selectedDeckId);
+    emit reviewModeChanged();
+}
+
+void PolyQ::FlashcardController::startEndlessReview()
+{
+    m_reviewSettings.mode = ReviewSessionMode::AllCards;
+    startReviewSession(m_selectedDeckId);
+    emit reviewModeChanged();
 }
 
 void PolyQ::FlashcardController::reviewAgain()
@@ -179,15 +203,15 @@ void PolyQ::FlashcardController::reviewCard(int rating)
     const ReviewRating reviewRating = static_cast<ReviewRating>(rating);
 
     const auto updatedCard = m_reviewSession.SubmitRating(reviewRating);
-    if (!updatedCard.has_value())
-        return;
-
-    m_pRepository->UpdateCard(updatedCard.value());
-
-    if (reviewRating != ReviewRating::Again)
+    if (updatedCard.has_value())
     {
-        m_DeckModel.adjustDueCount(m_selectedDeckId, -1);
-        emit reviewProgressChanged();
+        m_pRepository->UpdateCard(updatedCard.value());
+
+        if (reviewRating != ReviewRating::Again)
+        {
+            m_DeckModel.adjustDueCount(m_selectedDeckId, -1);
+            emit reviewProgressChanged();
+        }
     }
 
     updateCurrentCardFromSession();
@@ -200,10 +224,18 @@ void PolyQ::FlashcardController::loadCards(int deckId)
 
 void PolyQ::FlashcardController::startReviewSession(int deckId)
 {
-    const std::vector<Flashcard> dueCards =
-        m_pRepository->GetDueCardsForDeck(deckId);
+    std::vector<Flashcard> dueCards;
+    switch (m_reviewSettings.mode)
+    {
+    case ReviewSessionMode::AllCards:
+        dueCards = m_pRepository->GetCardsForDeck(deckId);
+        break;
+    case ReviewSessionMode::SpacedRepetition:
+        dueCards = m_pRepository->GetDueCardsForDeck(deckId);
+        break;
+    }
 
-    m_reviewSession.Start(dueCards);
+    m_reviewSession.Start(dueCards, m_reviewSettings);
 
     m_cardIndex = m_reviewSession.HasCards() ? 0 : -1;
     m_showingAnswer = false;
@@ -224,5 +256,19 @@ void PolyQ::FlashcardController::updateCurrentCardFromSession()
 
     emit cardChanged();
     emit showingAnswerChanged();
+    emit selectedDeckChanged();
+}
+
+void PolyQ::FlashcardController::refreshSelectedDeck()
+{
+    if (m_selectedDeckId < 0)
+        return;
+
+    const auto deck = m_pRepository->GetDeckById(m_selectedDeckId);
+    if (!deck.has_value())
+        return;
+
+    m_DeckModel.updateDeck(deck.value());
+
     emit selectedDeckChanged();
 }

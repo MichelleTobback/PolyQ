@@ -11,7 +11,8 @@ Item {
 
     property FlashcardController flashcardController
 
-    signal startReview()
+    signal startDueReview()
+    signal startEndlessReview()
 
     Flickable {
         anchors.fill: parent
@@ -100,7 +101,9 @@ Item {
                             }
 
                             Text {
-                                text: "Ready to review"
+                                text: root.flashcardController.currentDeck.dueCount === 0 
+                                    ? "No cards to review" 
+                                    : "Ready to review"
                                 font.pixelSize: Theme.fontHeading
                                 font.bold: true
                                 color: Theme.colors.textPrimary
@@ -129,8 +132,57 @@ Item {
 
                     AppButton {
                         text: "Start review"
+                        enabled: root.flashcardController.currentDeck.dueCount > 0
                         Layout.fillWidth: true
-                        onClicked: root.startReview()
+                        onClicked: root.startDueReview()
+                    }
+                }
+            }
+
+            AppCard {
+                Layout.fillWidth: true
+                Layout.minimumHeight: 170
+                autoHeightToContent: true
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 14
+
+                    RowLayout {
+                        Layout.fillWidth: true
+
+                        ColumnLayout {
+                            spacing: 4
+
+                            Text {
+                                text: "Review"
+                                font.pixelSize: Theme.fontBody
+                                font.bold: true
+                                color: Theme.colors.textSecondary
+                            }
+
+                            Text {
+                                text: "Endless"
+                                font.pixelSize: Theme.fontHeading
+                                font.bold: true
+                                color: Theme.colors.textPrimary
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: "Review your vocabulary as many times as you like."
+                        font.pixelSize: Theme.fontBody
+                        color: Theme.colors.textSecondary
+                        wrapMode: Text.WordWrap
+                        lineHeight: 1.15
+                        Layout.fillWidth: true
+                    }
+
+                    AppButton {
+                        text: "Start review"
+                        Layout.fillWidth: true
+                        onClicked: root.startEndlessReview()
                     }
                 }
             }

@@ -15,10 +15,11 @@ AppPage {
     property FlashcardController flashcardController
 
     signal back()
-    signal startReview()
     signal editDeck()
     signal addCard()
     signal editCard(int cardId, string front, string back)
+    signal startDueReview()
+    signal startEndlessReview()
 
     onBackClicked: root.back()
 
@@ -52,7 +53,8 @@ AppPage {
 
         DeckOverviewTab {
             flashcardController: root.flashcardController
-            onStartReview: root.startReview()
+            onStartDueReview: root.startDueReview()
+            onStartEndlessReview: root.startEndlessReview()
         }
 
         DeckWordListTab {

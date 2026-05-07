@@ -1,7 +1,8 @@
 #include "ReviewSession.h"
 
-void PolyQ::ReviewSession::Start(std::vector<Flashcard> cards)
+void PolyQ::ReviewSession::Start(std::vector<Flashcard> cards, const ReviewSessionSettings& settings)
 {
+    m_settings = settings;
 	m_queue.clear();
 
 	for (const Flashcard& card : cards)
@@ -52,16 +53,20 @@ std::optional<PolyQ::Flashcard> PolyQ::ReviewSession::SubmitRating(ReviewRating 
     Flashcard current = m_queue.front();
     m_queue.pop_front();
 
+    if (m_settings.mode == ReviewSessionMode::AllCards)
+    {
+        m_queue.push_back(current);
+        if (m_totalCount > 0)
+            m_reviewedCount = (m_reviewedCount + 1) % m_totalCount;
+        return std::nullopt;
+    }
+
     Flashcard updated = m_scheduler.Schedule(current, rating);
 
     if (rating == ReviewRating::Again)
-    {
         m_queue.push_back(updated);
-    }
     else
-    {
-        m_reviewedCount = std::min(++m_reviewedCount, m_totalCount);
-    }
+        ++m_reviewedCount;
 
     return updated;
 }

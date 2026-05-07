@@ -4,6 +4,7 @@
 #include <QString>
 
 #include <vector>
+#include <optional>
 
 #include "../Model/Deck.h"
 
@@ -108,6 +109,17 @@ namespace PolyQ
             return m_Decks[row];
         }
 
+        std::optional<PolyQ::Deck> deckById(int deckId) const
+        {
+            for (const Deck& deck : m_Decks)
+            {
+                if (deck.id == deckId)
+                    return deck;
+            }
+
+            return std::nullopt;
+        }
+
         void updateDeck(const Deck& updatedDeck)
         {
             for (int row = 0; row < m_Decks.size(); ++row)
@@ -133,18 +145,18 @@ namespace PolyQ
 
         void adjustDueCount(int deckId, int delta)
         {
-            if (delta == 0)
-                return;
-
-            for (int row = 0; row < m_Decks.size(); ++row)
+            for (int row = 0; row < static_cast<int>(m_Decks.size()); ++row)
             {
-                if (m_Decks[row].id != deckId)
+                Deck& deck = m_Decks[row];
+
+                if (deck.id != deckId)
                     continue;
 
-                m_Decks[row].dueCount = std::max(0, m_Decks[row].dueCount + delta);
+                deck.dueCount = std::max(0, deck.dueCount + delta);
 
-                const QModelIndex index = createIndex(row, 0);
-                emit dataChanged(index, index, { DueCountRole });
+                const QModelIndex modelIndex = index(row);
+                emit dataChanged(modelIndex, modelIndex, { DueCountRole });
+
                 return;
             }
         }

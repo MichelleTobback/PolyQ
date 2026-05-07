@@ -10,10 +10,21 @@
 
 namespace PolyQ
 {
+    enum class ReviewSessionMode
+    {
+        AllCards = 0,
+        SpacedRepetition = 1
+    };
+
+    struct ReviewSessionSettings
+    {
+        ReviewSessionMode mode{};
+    };
+
     class ReviewSession final
     {
     public:
-        void Start(std::vector<Flashcard> cards);
+        void Start(std::vector<Flashcard> cards, const ReviewSessionSettings& settings);
         void Clear();
 
         bool HasCards() const;
@@ -26,8 +37,9 @@ namespace PolyQ
         std::optional<Flashcard> SubmitRating(ReviewRating rating);
 
     private:
+        ReviewSessionSettings m_settings{};
         std::deque<Flashcard> m_queue;
-        ReviewScheduler m_scheduler;
+        ReviewScheduler m_scheduler{};
 
         int m_reviewedCount = 0;
         int m_totalCount = 0;

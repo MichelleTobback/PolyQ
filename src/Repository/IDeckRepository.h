@@ -2,6 +2,7 @@
 #include "../Model/Deck.h"
 #include "../Model/Flashcard.h"
 
+#include <optional>
 #include <QString>
 #include <vector>
 

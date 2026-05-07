@@ -44,7 +44,6 @@ ApplicationWindow {
             flashcardController: flashController
 
             onBack: stack.pop()
-            onStartReview: stack.push(reviewPageComponent)
             onEditDeck: stack.push(editDeckComponent)
 
             onAddCard: stack.push(editCardComponent, {
@@ -61,6 +60,16 @@ ApplicationWindow {
                     frontText: front,
                     backText: back
                 })
+            }
+
+            onStartDueReview: {
+                flashController.startDueReview()
+                stack.push(reviewPageComponent)
+            }
+
+            onStartEndlessReview: {
+                flashController.startEndlessReview()
+                stack.push(reviewPageComponent)
             }
         }
     }

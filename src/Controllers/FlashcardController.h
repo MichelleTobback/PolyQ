@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QString>
 #include <QVariantMap>
+#include <QTimer>
 #include <memory>
 
 #include "../Model/Flashcard.h"
@@ -26,6 +27,7 @@ namespace PolyQ
             Q_PROPERTY(FlashcardListModel* cards READ cards NOTIFY selectedDeckChanged)
             Q_PROPERTY(int selectedDeckId READ selectedDeckId NOTIFY selectedDeckChanged)
 
+            Q_PROPERTY(int reviewMode READ reviewMode NOTIFY reviewModeChanged)
             Q_PROPERTY(int reviewedCount READ reviewedCount NOTIFY reviewProgressChanged)
             Q_PROPERTY(int reviewTotalCount READ reviewTotalCount NOTIFY reviewProgressChanged)
 
@@ -42,10 +44,14 @@ namespace PolyQ
         FlashcardListModel* cards() { return &m_cardModel; }
         int selectedDeckId() const { return m_selectedDeckId; }
 
+        int reviewMode() const { return static_cast<int>(m_reviewSettings.mode); }
         int reviewedCount() const { return m_reviewSession.ReviewedCount(); }
         int reviewTotalCount() const { return m_reviewSession.TotalCount(); }
 
         Q_INVOKABLE void showAnswer();
+
+        Q_INVOKABLE void startDueReview();
+        Q_INVOKABLE void startEndlessReview();
 
         Q_INVOKABLE void reviewAgain();
         Q_INVOKABLE void reviewHard();
@@ -64,22 +70,27 @@ namespace PolyQ
         void showingAnswerChanged();
         void selectedDeckChanged();
         void reviewProgressChanged();
+        void reviewModeChanged();
 
     private:
         void reviewCard(int rating);
         void loadCards(int deckId);
         void startReviewSession(int deckId);
         void updateCurrentCardFromSession();
+        void refreshSelectedDeck();
 
     private:
         int m_selectedDeckId = -1;
         int m_cardIndex = -1;
         bool m_showingAnswer = false;
 
+        QTimer m_dueRefreshTimer;
+
         FlashcardListModel m_cardModel;
         DeckModel m_DeckModel;
 
         std::unique_ptr<class IDeckRepository> m_pRepository;
-        ReviewSession m_reviewSession;
+        ReviewSession m_reviewSession{};
+        ReviewSessionSettings m_reviewSettings{};
     };
 }

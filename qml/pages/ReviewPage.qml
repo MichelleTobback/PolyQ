@@ -26,7 +26,7 @@ AppPage {
         }
 
         Text {
-            text: (root.flashcardController.reviewedCount)
+            text: root.flashcardController.reviewedCount
                   + " / "
                   + root.flashcardController.reviewTotalCount
 
@@ -44,63 +44,27 @@ AppPage {
         controller: root.flashcardController
     }
 
-    AppButton {
-        id: revealButton
-
-        visible: !root.flashcardController.showingAnswer
-
-        text: "Show answer"
-
+    Loader {
         Layout.fillWidth: true
 
-        onClicked: root.flashcardController.showingAnswer = true
+        sourceComponent: root.flashcardController.reviewMode === 0
+                         ? endlessControlsComponent
+                         : ratingControlsComponent
     }
 
-    RowLayout {
-        visible: root.flashcardController.showingAnswer
+    Component {
+        id: ratingControlsComponent
 
-        Layout.fillWidth: true
-        spacing: 8
-
-        AppButton {
-            text: "Again"
-
-            buttonColor: Theme.colors.danger
-            pressedColor: Theme.colors.dangerPressed
-
-            Layout.fillWidth: true
-
-            onClicked: root.flashcardController.reviewAgain()
+        RatingReviewControls {
+            flashcardController: root.flashcardController
         }
+    }
 
-        AppButton {
-            text: "Hard"
+    Component {
+        id: endlessControlsComponent
 
-            buttonColor: Theme.colors.warning
-            pressedColor: Theme.colors.warningPressed
-
-            Layout.fillWidth: true
-
-            onClicked: root.flashcardController.reviewHard()
-        }
-
-        AppButton {
-            text: "Good"
-
-            Layout.fillWidth: true
-
-            onClicked: root.flashcardController.reviewGood()
-        }
-
-        AppButton {
-            text: "Easy"
-
-            buttonColor: Theme.colors.success
-            pressedColor: Theme.colors.successPressed
-
-            Layout.fillWidth: true
-
-            onClicked: root.flashcardController.reviewEasy()
+        EndlessReviewControls {
+            flashcardController: root.flashcardController
         }
     }
 }
