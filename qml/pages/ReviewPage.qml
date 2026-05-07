@@ -6,91 +6,101 @@ import PolyQ.Components
 import PolyQ.Theme
 import PolyQ.Controllers 1.0
 
-Page {
+AppPage {
     id: root
 
-    signal back()
+    pageTitle: flashcardController.currentDeck.title
+    showBackButton: true
 
     property FlashcardController flashcardController
 
-    background: Rectangle {
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: Theme.colors.backgroundTop }
-            GradientStop { position: 1.0; color: Theme.colors.backgroundBottom }
+    signal back()
+
+    onBackClicked: root.back()
+
+    RowLayout {
+        Layout.fillWidth: true
+
+        Item {
+            Layout.fillWidth: true
+        }
+
+        Text {
+            text: (root.flashcardController.cardIndex + 1)
+                  + " / "
+                  + root.flashcardController.currentDeck.cardCount
+
+            font.pixelSize: Theme.fontBody
+            color: Theme.colors.textSecondary
+
+            Layout.alignment: Qt.AlignTop | Qt.AlignRight
         }
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: Theme.pageMargin
-        spacing: Theme.spacing
+    FlashcardView {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
 
-        RowLayout {
+        controller: root.flashcardController
+    }
+
+    AppButton {
+        id: revealButton
+
+        visible: !root.flashcardController.showingAnswer
+
+        text: "Show answer"
+
+        Layout.fillWidth: true
+
+        onClicked: root.flashcardController.showingAnswer = true
+    }
+
+    RowLayout {
+        visible: root.flashcardController.showingAnswer
+
+        Layout.fillWidth: true
+        spacing: 8
+
+        AppButton {
+            text: "Again"
+
+            buttonColor: Theme.colors.danger
+            pressedColor: Theme.colors.dangerPressed
+
             Layout.fillWidth: true
 
-            AppBackButton {
-                onClicked: root.back()
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Text {
-                text: (root.flashcardController.cardIndex + 1) + " / " + root.flashcardController.currentDeck.cardCount
-                font.pixelSize: Theme.fontBody
-                color: Theme.colors.textSecondary
-            }
-        }
-
-        FlashcardView {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            controller: root.flashcardController
+            onClicked: root.flashcardController.reviewAgain()
         }
 
         AppButton {
-            id: revealButton
-            visible: !root.flashcardController.showingAnswer
-            text: "Show answer"
+            text: "Hard"
+
+            buttonColor: Theme.colors.warning
+            pressedColor: Theme.colors.warningPressed
+
             Layout.fillWidth: true
-            onClicked: root.showingAnswer = true
+
+            onClicked: root.flashcardController.reviewHard()
         }
 
-        RowLayout {
-            visible: root.flashcardController.showingAnswer
+        AppButton {
+            text: "Good"
+
             Layout.fillWidth: true
-            spacing: 8
 
-            AppButton {
-                text: "Again"
-                buttonColor: Theme.colors.danger
-                pressedColor: Theme.colors.dangerPressed
-                Layout.fillWidth: true
-                onClicked: root.flashcardController.reviewAgain()
-            }
+            onClicked: root.flashcardController.reviewGood()
+        }
 
-            AppButton {
-                text: "Hard"
-                buttonColor: Theme.colors.warning
-                pressedColor: Theme.colors.warningPressed
-                Layout.fillWidth: true
-                onClicked: root.flashcardController.reviewHard()
-            }
+        AppButton {
+            text: "Easy"
 
-            AppButton {
-                text: "Good"
-                Layout.fillWidth: true
-                onClicked: root.flashcardController.reviewGood()
-            }
+            buttonColor: Theme.colors.success
+            pressedColor: Theme.colors.successPressed
 
-            AppButton {
-                text: "Easy"
-                buttonColor: Theme.colors.success
-                pressedColor: Theme.colors.successPressed
-                Layout.fillWidth: true
-                onClicked: root.flashcardController.reviewEasy()
-            }
+            Layout.fillWidth: true
+
+            onClicked: root.flashcardController.reviewEasy()
         }
     }
 }

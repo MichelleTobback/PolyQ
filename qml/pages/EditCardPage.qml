@@ -6,8 +6,11 @@ import PolyQ.Components
 import PolyQ.Theme
 import PolyQ.Controllers 1.0
 
-Page {
+AppPage {
     id: root
+
+    pageTitle: root.isEditing ? "Edit card" : "Add card"
+    showBackButton: true
 
     property FlashcardController flashcardController
 
@@ -19,93 +22,69 @@ Page {
 
     signal back()
 
-    background: Rectangle {
-        color: Theme.colors.background
-    }
+    onBackClicked: root.back()
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: Theme.pageMargin
-        spacing: Theme.spacing
+    AppCard {
+        Layout.fillWidth: true
+        autoHeightToContent: true
 
-        RowLayout {
-            Layout.fillWidth: true
+        ColumnLayout {
+            width: parent.width
+            spacing: 14
 
-            AppBackButton {
-                onClicked: root.back()
+            Text {
+                text: "Front"
+                font.pixelSize: Theme.fontBody
+                font.bold: true
+                color: Theme.colors.textSecondary
+            }
+
+            AppTextArea {
+                id: frontField
+                Layout.fillWidth: true
+                text: root.frontText
+                animatedPlaceholder: "Question, word or phrase"
             }
 
             Text {
-                text: root.isEditing ? "Edit card" : "Add card"
-                font.pixelSize: Theme.fontHeading
+                text: "Back"
+                font.pixelSize: Theme.fontBody
                 font.bold: true
-                color: Theme.colors.textPrimary
+                color: Theme.colors.textSecondary
+            }
+
+            AppTextArea {
+                id: backField
                 Layout.fillWidth: true
+                text: root.backText
+                animatedPlaceholder: "Answer or translation"
             }
         }
+    }
 
-        AppCard {
-            Layout.fillWidth: true
-            autoHeightToContent: true
+    Item {
+        Layout.fillHeight: true
+    }
 
-            ColumnLayout {
-                width: parent.width
-                spacing: 14
+    AppButton {
+        text: root.isEditing ? "Save changes" : "Create card"
+        Layout.fillWidth: true
 
-                Text {
-                    text: "Front"
-                    font.pixelSize: Theme.fontBody
-                    font.bold: true
-                    color: Theme.colors.textSecondary
-                }
-
-                AppTextArea {
-                    id: frontField
-                    Layout.fillWidth: true
-                    text: root.frontText
-                    animatedPlaceholder: "Question, word or phrase"
-                }
-
-                Text {
-                    text: "Back"
-                    font.pixelSize: Theme.fontBody
-                    font.bold: true
-                    color: Theme.colors.textSecondary
-                }
-
-                AppTextArea {
-                    id: backField
-                    Layout.fillWidth: true
-                    text: root.backText
-                    animatedPlaceholder: "Answer or translation"
-                }
+        onClicked: {
+            if (root.isEditing) {
+                root.flashcardController.updateCard(
+                    root.cardId,
+                    frontField.text,
+                    backField.text
+                )
+            } else {
+                root.flashcardController.createCard(
+                    frontField.text,
+                    backField.text
+                )
             }
-        }
 
-        Item {
-            Layout.fillHeight: true
-        }
-
-        AppButton {
-            text: root.isEditing ? "Save changes" : "Create card"
-            Layout.fillWidth: true
-
-            onClicked: {
-                if (root.isEditing) {
-                    root.flashcardController.updateCard(
-                        root.cardId,
-                        frontField.text,
-                        backField.text
-                    )
-                } else {
-                    root.flashcardController.createCard(
-                        frontField.text,
-                        backField.text
-                    )
-                }
-
-                root.back()
-            }
+            root.back()
         }
     }
 }

@@ -1,8 +1,9 @@
 import QtQuick
 
 QtObject {
-
+    
     // ===== BACKGROUND =====
+    readonly property int backgroundType: 1
     readonly property color background: "#17141C"
     readonly property color backgroundTop: "#1D1924"
     readonly property color backgroundBottom: "#141018"

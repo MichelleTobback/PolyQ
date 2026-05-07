@@ -6,8 +6,11 @@ import PolyQ.Components
 import PolyQ.Theme
 import PolyQ.Controllers 1.0
 
-Page {
+AppPage {
     id: root
+
+    pageTitle: flashcardController.currentDeck.title
+    showBackButton: true
 
     property FlashcardController flashcardController
 
@@ -17,77 +20,49 @@ Page {
     signal addCard()
     signal editCard(int cardId, string front, string back)
 
-    background: Rectangle {
-        color: Theme.colors.background
+    onBackClicked: root.back()
+
+    headerRight: AppIconButton {
+        iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Edit.svg"
+        onClicked: root.editDeck()
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: Theme.pageMargin
-        spacing: Theme.spacing
+    AppTabBar {
+        id: tabBar
+        Layout.fillWidth: true
 
-        RowLayout {
-            Layout.fillWidth: true
+        AppTabButton { text: "Overview" }
+        AppTabButton { text: "Word list" }
+        AppTabButton { text: "Stats" }
+    }
 
-            AppBackButton {
-                onClicked: root.back()
-            }
+    SwipeView {
+        id: swipeView
 
-            Item {
-                Layout.fillWidth: true
-            }
+        Layout.fillHeight: true
+        Layout.fillWidth: true
 
-            AppIconButton {
-                text: "✏"
-                onClicked: root.editDeck()
+        Layout.leftMargin: -Theme.pageMargin
+        Layout.rightMargin: -Theme.pageMargin
+
+        clip: true
+
+        currentIndex: tabBar.currentIndex
+        onCurrentIndexChanged: tabBar.currentIndex = currentIndex
+
+        DeckOverviewTab {
+            flashcardController: root.flashcardController
+            onStartReview: root.startReview()
+        }
+
+        DeckWordListTab {
+            flashcardController: root.flashcardController
+            onAddCard: root.addCard()
+            onEditCard: function(cardId, front, back) {
+                root.editCard(cardId, front, back)
             }
         }
 
-        Text {
-            text: flashcardController.currentDeck.title
-            font.pixelSize: Theme.fontTitle
-            font.bold: true
-            color: Theme.colors.textPrimary
-            Layout.fillWidth: true
-        }
-
-        AppTabBar {
-            id: tabBar
-            Layout.fillWidth: true
-
-            AppTabButton { text: "Overview" }
-            AppTabButton { text: "Word list" }
-            AppTabButton { text: "Stats" }
-        }
-
-        SwipeView {
-            id: swipeView
-
-            Layout.fillHeight: true
-
-            Layout.leftMargin: -Theme.pageMargin
-            Layout.rightMargin: -Theme.pageMargin
-
-            Layout.fillWidth: true
-            clip: true
-
-            currentIndex: tabBar.currentIndex
-            onCurrentIndexChanged: tabBar.currentIndex = currentIndex
-
-            DeckOverviewTab {
-                flashcardController: root.flashcardController
-                onStartReview: root.startReview()
-            }
-
-            DeckWordListTab {
-                flashcardController: root.flashcardController
-                onAddCard: root.addCard()
-                onEditCard: function(cardId, front, back) {
-                    root.editCard(cardId, front, back)
-                }
-            }
-
-            DeckStatsTab {}
-        }
+        DeckStatsTab {}
     }
 }

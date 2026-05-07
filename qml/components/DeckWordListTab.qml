@@ -51,8 +51,10 @@ Item {
 
                 AppIconButton {
                     Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    text: "✏"
-
+                    iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Edit.svg"
+                    iconColor: Theme.colors.primary
+                    showBackground: false
+                    showBorder: false
                     onClicked: root.editCard(model.cardId, model.front, model.back)
                 }
             }

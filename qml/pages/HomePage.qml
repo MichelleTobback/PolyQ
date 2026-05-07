@@ -6,7 +6,7 @@ import PolyQ.Components
 import PolyQ.Theme
 import PolyQ.Controllers 1.0
 
-Page {
+AppPage {
     id: root
 
     signal openDeck()
@@ -14,89 +14,67 @@ Page {
 
     property FlashcardController flashcardController
 
-    background: Rectangle {
-        color: Theme.colors.background
+    pageTitle: "PolyQ"
+    titleColor: Theme.colors.textOnPrimary
+
+    headerRight: AppIconButton {
+        iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Cog.svg"
+        iconColor: Theme.colors.textOnPrimary
+        showBackground: false
+        showBorder: false
+        onClicked: root.openSettings()
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: Theme.pageMargin
+    Text {
+        text: "Learn smarter, review daily"
+        font.pixelSize: Theme.fontBody
+        color: Theme.colors.textSecondary
+    }
+
+    Text {
+        text: "Your decks"
+        font.pixelSize: Theme.fontHeading
+        font.bold: true
+        color: Theme.colors.textPrimary
+    }
+
+    ListView {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
         spacing: Theme.spacing
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
+        model: root.flashcardController.decks
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 4
+        delegate: DeckCard {
+            width: ListView.view.width
 
-                Text {
-                    text: "PolyQ"
-                    font.pixelSize: Theme.fontTitle
-                    font.bold: true
-                    color: Theme.colors.primary
-                }
+            title: model.title
+            subtitle: model.subtitle
+            enabled: model.enabled
+            opacity: model.enabled ? 1.0 : 0.55
 
-                Text {
-                    text: "Learn smarter, review daily"
-                    font.pixelSize: Theme.fontBody
-                    color: Theme.colors.textSecondary
-                }
-            }
-
-            AppIconButton {
-                text: "⚙"
-                onClicked: root.openSettings()
+            onClicked: {
+                root.flashcardController.selectDeck(deckId)
+                root.openDeck()
             }
         }
+    }
 
-        Text {
-            text: "Your decks"
-            font.pixelSize: Theme.fontHeading
-            font.bold: true
-            color: Theme.colors.textPrimary
+    RowLayout {
+        Layout.fillWidth: true
+
+        AppButton {
+            Layout.fillWidth: true
+            text: "Create"
+
+            onClicked: root.flashcardController.createDeck("New Deck")
         }
 
-        ListView {
+        AppButton {
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            text: "Import"
 
-            spacing: Theme.spacing
-
-            model: root.flashcardController.decks
-
-            delegate: DeckCard {
-                width: ListView.view.width
-
-                title: model.title
-                subtitle: model.subtitle
-                enabled: model.enabled
-                opacity: model.enabled ? 1.0 : 0.55
-
-                onClicked: {
-                    flashcardController.selectDeck(deckId)
-                    openDeck()
-                }
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-
-            AppButton {
-                Layout.fillWidth: true
-                text: "Create"
-        
-                onClicked: root.flashcardController.createDeck("New Deck")
-            }
-
-            AppButton {
-                Layout.fillWidth: true
-                text: "Import"
-            
-                onClicked: root.flashcardController.importDeck()
-            }
+            onClicked: root.flashcardController.importDeck()
         }
     }
 }

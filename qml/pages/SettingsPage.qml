@@ -5,51 +5,43 @@ import QtQuick.Layouts
 import PolyQ.Components
 import PolyQ.Theme
 
-Page {
+AppPage {
     id: root
+
+    pageTitle: "Appearance"
+    showBackButton: true
 
     signal back()
 
-    background: Rectangle {
-        color: Theme.colors.background
+    onBackClicked: root.back()
+
+    Text {
+        text: "Choose your theme"
+        font.pixelSize: Theme.fontBody
+        color: Theme.colors.textSecondary
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: Theme.pageMargin
-        spacing: Theme.spacing
+    AppButton {
+        text: Theme.currentTheme === "pastel"
+              ? "✓ Pastel Pink"
+              : "Pastel Pink"
 
-        AppBackButton {
-            onClicked: root.back()
-        }
+        Layout.fillWidth: true
 
-        Text {
-            text: "Appearance"
-            font.pixelSize: Theme.fontTitle
-            font.bold: true
-            color: Theme.colors.textPrimary
-        }
+        onClicked: Theme.setTheme("pastel")
+    }
 
-        Text {
-            text: "Choose your theme"
-            font.pixelSize: Theme.fontBody
-            color: Theme.colors.textSecondary
-        }
+    AppButton {
+        text: Theme.currentTheme === "dark"
+              ? "✓ Dark"
+              : "Dark"
 
-        AppButton {
-            text: Theme.currentTheme === "pastel" ? "Pastel Pink" : "Pastel Pink"
-            Layout.fillWidth: true
-            onClicked: Theme.setTheme("pastel")
-        }
+        Layout.fillWidth: true
 
-        AppButton {
-            text: Theme.currentTheme === "dark" ? "Dark" : "Dark"
-            Layout.fillWidth: true
-            onClicked: Theme.setTheme("dark")
-        }
+        onClicked: Theme.setTheme("dark")
+    }
 
-        Item {
-            Layout.fillHeight: true
-        }
+    Item {
+        Layout.fillHeight: true
     }
 }

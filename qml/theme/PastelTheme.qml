@@ -1,11 +1,15 @@
 import QtQuick
 
 QtObject {
-
     // ===== BACKGROUND =====
+    readonly property int backgroundType: 0
+
     readonly property color background: "#FFF7FB"
-    readonly property color backgroundTop: "#FFF9FC"
-    readonly property color backgroundBottom: "#F5EEFF"
+    readonly property color backgroundTop: "#FFEAF3"
+    readonly property color backgroundBottom: "#EEF3FF"
+    
+    readonly property color background2: "#FFD9E8"
+    readonly property color background3: "#CFE2FF"
 
     // ===== SURFACES =====
     readonly property color surface: "#FFFFFF"
@@ -23,8 +27,8 @@ QtObject {
     readonly property color primaryPressed: "#E07A9C"
 
     // ===== SECONDARY =====
-    readonly property color secondary: "#C6B7F5"
-    readonly property color secondaryPressed: "#A99BE8"
+    readonly property color secondary: "#BFD9FF"
+    readonly property color secondaryPressed: "#9FC3F5"
 
     // ===== STATUS =====
     readonly property color danger: "#F28CA5"
@@ -43,5 +47,5 @@ QtObject {
     readonly property color textOnPrimary: "#FFFFFF"
 
     // ===== EFFECTS =====
-    readonly property color shadow: "#14000000"  // softer shadow (important!)
+    readonly property color shadow: "#14000000"
 }

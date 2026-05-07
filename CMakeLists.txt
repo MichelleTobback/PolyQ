@@ -33,6 +33,11 @@ qt_add_qml_module(appPolyQ
     OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/PolyQ
     QML_FILES
         qml/Main.qml
+
+    RESOURCES
+        resources/icons/Cog.svg
+        resources/icons/Edit.svg
+        resources/icons/Return.svg
 )
 
 qt_add_qml_module(appPolyQComponents
@@ -55,6 +60,7 @@ qt_add_qml_module(appPolyQComponents
         qml/components/DeckOverviewTab.qml
         qml/components/DeckStatsTab.qml
         qml/components/DeckWordListTab.qml
+        qml/components/PageBackground.qml
 )
 
 set(qml_singletons
