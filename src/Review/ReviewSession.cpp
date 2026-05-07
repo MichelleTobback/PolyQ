@@ -45,10 +45,10 @@ int PolyQ::ReviewSession::TotalCount() const
     return m_totalCount;
 }
 
-std::optional<PolyQ::Flashcard> PolyQ::ReviewSession::SubmitRating(ReviewRating rating)
+PolyQ::ReviewResult PolyQ::ReviewSession::SubmitRating(ReviewRating rating)
 {
     if (m_queue.empty())
-        return std::nullopt;
+        return {};
 
     Flashcard current = m_queue.front();
     m_queue.pop_front();
@@ -56,17 +56,34 @@ std::optional<PolyQ::Flashcard> PolyQ::ReviewSession::SubmitRating(ReviewRating 
     if (m_settings.mode == ReviewSessionMode::AllCards)
     {
         m_queue.push_back(current);
+
         if (m_totalCount > 0)
             m_reviewedCount = (m_reviewedCount + 1) % m_totalCount;
-        return std::nullopt;
+
+        ReviewResult result;
+        result.type = ReviewResultType::EndlessAdvanced;
+        result.rating = rating;
+        return result;
+    }
+
+    if (rating == ReviewRating::Again)
+    {
+        m_queue.push_back(current);
+
+        ReviewResult result;
+        result.type = ReviewResultType::Requeued;
+        result.rating = rating;
+        return result;
     }
 
     Flashcard updated = m_scheduler.Schedule(current, rating);
 
-    if (rating == ReviewRating::Again)
-        m_queue.push_back(updated);
-    else
-        ++m_reviewedCount;
+    ReviewResult result;
+    result.type = ReviewResultType::Rescheduled;
+    result.rating = rating;
+    result.updatedCard = updated;
 
-    return updated;
+    ++m_reviewedCount;
+
+    return result;
 }

@@ -202,19 +202,19 @@ void PolyQ::FlashcardController::reviewCard(int rating)
 {
     const ReviewRating reviewRating = static_cast<ReviewRating>(rating);
 
-    const auto updatedCard = m_reviewSession.SubmitRating(reviewRating);
-    if (updatedCard.has_value())
-    {
-        m_pRepository->UpdateCard(updatedCard.value());
+    const ReviewResult result = m_reviewSession.SubmitRating(reviewRating);
 
-        if (reviewRating != ReviewRating::Again)
+    if (result.shouldPersist())
+    {
+        if (m_pRepository->UpdateCard(result.updatedCard.value()))
         {
-            m_DeckModel.adjustDueCount(m_selectedDeckId, -1);
-            emit reviewProgressChanged();
+            refreshSelectedDeck();
         }
     }
 
     updateCurrentCardFromSession();
+
+    emit reviewProgressChanged();
 }
 
 void PolyQ::FlashcardController::loadCards(int deckId)

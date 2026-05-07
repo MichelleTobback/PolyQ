@@ -2,6 +2,7 @@
 
 #include "../Model/Flashcard.h"
 
+#include "ReviewResult.h"
 #include "ReviewScheduler.h"
 
 #include <deque>
@@ -34,7 +35,7 @@ namespace PolyQ
 
         std::optional<Flashcard> CurrentCard() const;
 
-        std::optional<Flashcard> SubmitRating(ReviewRating rating);
+        ReviewResult SubmitRating(ReviewRating rating);
 
     private:
         ReviewSessionSettings m_settings{};

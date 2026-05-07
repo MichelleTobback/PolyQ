@@ -34,6 +34,7 @@ namespace PolyQ
         Deck ReadDeck(class QSqlQuery& query) const;
         Flashcard ReadCard(class QSqlQuery& query) const;
         bool SeedTestData();
+        bool Commit();
 
     private:
         QString m_connectionName;

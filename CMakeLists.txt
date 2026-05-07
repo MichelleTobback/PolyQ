@@ -31,6 +31,7 @@ qt_add_executable(appPolyQ
     src/Review/ReviewScheduler.cpp
     src/Review/ReviewSession.h
     src/Review/ReviewSession.cpp
+    src/Review/ReviewResult.h
 )
 
 qt_add_qml_module(appPolyQ

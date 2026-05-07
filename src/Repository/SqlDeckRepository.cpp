@@ -50,6 +50,9 @@ bool PolyQ::SqlDeckRepository::Initialize()
         return false;
     }
 
+    QSqlQuery foreignKeyQuery(m_database);
+    foreignKeyQuery.exec("PRAGMA foreign_keys = ON");
+
     if (!CreateTables())
         return false;
 
@@ -261,10 +264,19 @@ std::vector<PolyQ::Flashcard> PolyQ::SqlDeckRepository::GetCardsForDeck(int deck
 
     QSqlQuery query(m_database);
     query.prepare(R"(
-        SELECT id, deck_id, front, back
-        FROM cards
-        WHERE deck_id = :deck_id
-        ORDER BY id ASC
+        SELECT
+            c.id,
+            c.deck_id,
+            c.front,
+            c.back,
+            rs.due_at,
+            rs.interval_days,
+            rs.ease_factor,
+            rs.repetitions
+        FROM cards c
+        INNER JOIN review_states rs ON rs.card_id = c.id
+        WHERE c.deck_id = :deck_id
+        ORDER BY c.id ASC
     )");
     query.bindValue(":deck_id", deckId);
 
@@ -286,7 +298,15 @@ std::vector<PolyQ::Flashcard> PolyQ::SqlDeckRepository::GetDueCardsForDeck(int d
 
     QSqlQuery query(m_database);
     query.prepare(R"(
-        SELECT c.id, c.deck_id, c.front, c.back
+        SELECT
+            c.id,
+            c.deck_id,
+            c.front,
+            c.back,
+            rs.due_at,
+            rs.interval_days,
+            rs.ease_factor,
+            rs.repetitions
         FROM cards c
         INNER JOIN review_states rs ON rs.card_id = c.id
         WHERE c.deck_id = :deck_id
@@ -352,7 +372,7 @@ bool PolyQ::SqlDeckRepository::CreateCard(int deckId, const QString& front, cons
         return false;
     }
 
-    return m_database.commit();
+    return Commit();
 }
 
 bool PolyQ::SqlDeckRepository::UpdateCard(int cardId, const QString& front, const QString& back)
@@ -382,7 +402,56 @@ bool PolyQ::SqlDeckRepository::UpdateCard(int cardId, const QString& front, cons
 
 bool PolyQ::SqlDeckRepository::UpdateCard(const Flashcard& card)
 {
-    return UpdateCard(card.id, card.front, card.back);
+    if (!m_database.transaction())
+        return false;
+
+    QSqlQuery cardQuery(m_database);
+    cardQuery.prepare(R"(
+        UPDATE cards
+        SET front = :front,
+            back = :back,
+            updated_at = :updated_at
+        WHERE id = :id
+    )");
+
+    cardQuery.bindValue(":id", card.id);
+    cardQuery.bindValue(":front", card.front.trimmed());
+    cardQuery.bindValue(":back", card.back.trimmed());
+    cardQuery.bindValue(":updated_at", nowIso());
+
+    if (!cardQuery.exec())
+    {
+        qWarning() << cardQuery.lastError().text();
+        m_database.rollback();
+        return false;
+    }
+
+    QSqlQuery reviewQuery(m_database);
+    reviewQuery.prepare(R"(
+        UPDATE review_states
+        SET due_at = :due_at,
+            interval_days = :interval_days,
+            ease_factor = :ease_factor,
+            repetitions = :repetitions,
+            last_reviewed_at = :last_reviewed_at
+        WHERE card_id = :card_id
+    )");
+
+    reviewQuery.bindValue(":card_id", card.id);
+    reviewQuery.bindValue(":due_at", card.dueAt.toUTC().toString(Qt::ISODate));
+    reviewQuery.bindValue(":interval_days", card.intervalDays);
+    reviewQuery.bindValue(":ease_factor", card.easeFactor);
+    reviewQuery.bindValue(":repetitions", card.reviewCount);
+    reviewQuery.bindValue(":last_reviewed_at", nowIso());
+
+    if (!reviewQuery.exec())
+    {
+        qWarning() << reviewQuery.lastError().text();
+        m_database.rollback();
+        return false;
+    }
+
+    return Commit();
 }
 
 bool PolyQ::SqlDeckRepository::DeleteCard(int cardId)
@@ -419,6 +488,12 @@ PolyQ::Flashcard PolyQ::SqlDeckRepository::ReadCard(QSqlQuery& query) const
     card.deckId = query.value("deck_id").toInt();
     card.front = query.value("front").toString();
     card.back = query.value("back").toString();
+
+    card.dueAt = QDateTime::fromString(query.value("due_at").toString(), Qt::ISODate);
+    card.intervalDays = query.value("interval_days").toInt();
+    card.easeFactor = query.value("ease_factor").toDouble();
+    card.reviewCount = query.value("repetitions").toInt();
+
     return card;
 }
 
@@ -517,6 +592,17 @@ bool PolyQ::SqlDeckRepository::SeedTestData()
 
         for (const auto& [front, back] : deckData.cards)
             CreateCard(deckId, front, back);
+    }
+
+    return true;
+}
+
+bool PolyQ::SqlDeckRepository::Commit()
+{
+    if (!m_database.commit())
+    {
+        qWarning() << m_database.lastError().text();
+        return false;
     }
 
     return true;

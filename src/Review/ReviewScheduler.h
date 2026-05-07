@@ -2,16 +2,10 @@
 
 #include "../Model/Flashcard.h"
 
+#include "ReviewResult.h"
+
 namespace PolyQ
 {
-    enum class ReviewRating
-    {
-        Again = 0,
-        Hard = 1,
-        Good = 2,
-        Easy = 3
-    };
-
     class ReviewScheduler final
     {
     public:
