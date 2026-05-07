@@ -5,13 +5,15 @@ QtObject {
     readonly property int backgroundType: 0
 
     readonly property color background: "#FFF7FB"
-    readonly property color backgroundTop: "#FFEAF3"
-    readonly property color backgroundBottom: "#EEF3FF"
+    readonly property color backgroundTop: "#f2acc3"
+    readonly property color backgroundBottom: "#f2ebed"
     
     readonly property color background2: "#FFD9E8"
     readonly property color background3: "#CFE2FF"
 
     // ===== SURFACES =====
+    readonly property color header: "#E07A9C"
+
     readonly property color surface: "#FFFFFF"
     readonly property color surfaceAlt: "#FFFAFD"
     readonly property color surfaceSoft: "#FFF4F8"

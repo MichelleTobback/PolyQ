@@ -9,6 +9,8 @@ QtObject {
     readonly property color backgroundBottom: "#141018"
 
     // ===== SURFACES =====
+    readonly property color header: "#322c38"
+
     readonly property color surface: "#241F2B"
     readonly property color surfaceAlt: "#2B2533"
     readonly property color surfaceSoft: "#312A3A"

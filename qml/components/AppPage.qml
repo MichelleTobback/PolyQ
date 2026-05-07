@@ -36,11 +36,6 @@ Page {
         id: animatedBackgroundComponent
 
         PageBackground {
-            backgroundColor: Theme.colors.background
-            gradientTop: Theme.colors.backgroundTop
-            gradientBottom: Theme.colors.backgroundBottom
-            blobPrimary: Theme.colors.background2
-            blobSecondary: Theme.colors.background3
         }
     }
 
@@ -51,9 +46,9 @@ Page {
         Rectangle {
             Layout.fillWidth: true
 
-            color: Theme.colors.primaryPressed
+            color: Theme.colors.header
 
-            implicitHeight: headerLayout.implicitHeight + 24
+            implicitHeight: headerLayout.implicitHeight + 12
 
             ColumnLayout {
                 id: headerLayout
@@ -62,23 +57,28 @@ Page {
 
                 anchors.leftMargin: Theme.pageMargin
                 anchors.rightMargin: Theme.pageMargin
-                anchors.topMargin: Theme.pageMargin
-                anchors.bottomMargin: 12
+                anchors.topMargin: 6
+                anchors.bottomMargin: 10
 
-                spacing: -4
+                spacing: 2
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 12
 
-                    Text {
-                        text: root.pageTitle
+                    AppIconButton {
+                        opacity: root.showBackButton ? 1.0 : 0.0
+                        enabled: root.showBackButton
 
-                        font.pixelSize: root.titleSize
-                        font.bold: true
+                        iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Return.svg"
+                        iconColor: Theme.colors.textOnPrimary
 
-                        color: root.titleColor
+                        showBackground: false
+                        showBorder: false
 
+                        onClicked: root.backClicked()
+                    }
+
+                    Item {
                         Layout.fillWidth: true
                     }
 
@@ -97,16 +97,15 @@ Page {
                     }
                 }
 
-                AppIconButton {
-                    opacity: root.showBackButton ? 1.0 : 0.0
-                    enabled: root.showBackButton
+                Text {
+                    text: root.pageTitle
 
-                    iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Return.svg"
-                    iconColor: Theme.colors.textOnPrimary
-                    showBackground: false
-                    showBorder: false
+                    font.pixelSize: root.titleSize
+                    font.bold: true
 
-                    onClicked: root.backClicked()
+                    color: root.titleColor
+
+                    Layout.fillWidth: true
                 }
             }
         }
