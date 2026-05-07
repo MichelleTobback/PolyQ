@@ -162,7 +162,7 @@ Supported compilers:
 ## Clone
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/MichelleTobback/PolyQ
 cd PolyQ
 ```
 
