@@ -271,7 +271,6 @@ void PolyQ::FlashcardController::reviewCard(int rating)
     }
 
     updateCurrentCardFromSession();
-
     emit reviewProgressChanged();
 }
 
@@ -329,4 +328,9 @@ void PolyQ::FlashcardController::refreshSelectedDeck()
     m_DeckModel.updateDeck(deck.value());
 
     emit selectedDeckChanged();
+}
+
+bool PolyQ::FlashcardController::reviewFinished() const
+{
+    return m_reviewSession.TotalCount() > 0 && !m_reviewSession.HasCards();
 }

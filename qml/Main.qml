@@ -14,9 +14,19 @@ ApplicationWindow {
     height: 900
     visible: true
     title: "PolyQ"
+    color: Theme.background
+
+    Shortcut {
+        sequences: [StandardKey.Back, "Esc"]
+
+        onActivated: {
+            if (stack.depth > 1)
+                stack.pop()
+        }
+    }
 
     FlashcardController {
-    id: flashController
+        id: flashController
     }
 
     Loader {

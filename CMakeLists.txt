@@ -75,6 +75,7 @@ qt_add_qml_module(appPolyQComponents
         qml/components/PageBackground.qml
         qml/components/RatingReviewControls.qml
         qml/components/EndlessReviewControls.qml
+        qml/components/ReviewEndScreen.qml
 )
 
 set(qml_singletons

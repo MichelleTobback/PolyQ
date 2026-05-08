@@ -147,7 +147,10 @@ AppPage {
 
     AppButton {
         text: "Save changes"
-        Layout.fillWidth: true
+
+        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+        Layout.preferredWidth: parent.width / 2
+        Layout.preferredHeight: Theme.buttonHeight
 
         onClicked: {
             root.flashcardController.updateDeck(

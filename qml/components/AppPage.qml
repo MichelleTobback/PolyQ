@@ -12,6 +12,7 @@ Page {
     property color titleColor: Theme.colors.textOnPrimary
     property int titleSize: Theme.fontTitle
 
+    property bool showHeader: true
     property bool showBackButton: false
     property int contentSpacing: Theme.spacing
 
@@ -19,6 +20,7 @@ Page {
 
     default property alias content: contentColumn.data
     property alias headerRight: headerRightContainer.data
+    property alias overlay: overlayLayer.data
 
     background: Rectangle {
         color: "transparent"
@@ -28,17 +30,35 @@ Page {
         anchors.fill: parent
         spacing: root.contentSpacing
 
-        // Header
         Rectangle {
+            id: header
+
             Layout.fillWidth: true
+            Layout.preferredHeight: root.showHeader
+                                    ? headerContainer.implicitHeight + 20
+                                    : 0
+
+            visible: true
+            clip: true
+            opacity: root.showHeader ? 1 : 0
 
             color: Theme.colors.header
-
             radius: 0
 
-            implicitHeight: headerContainer.implicitHeight + 20
+            Behavior on Layout.preferredHeight {
+                NumberAnimation {
+                    duration: Theme.animationSlow
+                    easing.type: Easing.OutCubic
+                }
+            }
 
-            // subtle bottom separator
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Theme.animationSlow
+                    easing.type: Easing.OutCubic
+                }
+            }
+
             Rectangle {
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -51,12 +71,13 @@ Page {
             ColumnLayout {
                 id: headerContainer
 
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
 
                 anchors.leftMargin: Theme.pageMargin
                 anchors.rightMargin: Theme.pageMargin
                 anchors.topMargin: 10
-                anchors.bottomMargin: 10
 
                 spacing: 8
 
@@ -64,7 +85,6 @@ Page {
                     Layout.fillWidth: true
                     spacing: 10
 
-                    // Back button
                     AppIconButton {
                         visible: root.showBackButton
 
@@ -83,7 +103,6 @@ Page {
                         onClicked: root.backClicked()
                     }
 
-                    // Title section
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 2
@@ -102,7 +121,6 @@ Page {
                         }
                     }
 
-                    // Right-side actions
                     RowLayout {
                         id: headerRightContainer
 
@@ -113,7 +131,6 @@ Page {
             }
         }
 
-        // Page content
         ColumnLayout {
             id: contentColumn
 
@@ -126,5 +143,12 @@ Page {
 
             spacing: Theme.spacing
         }
+    }
+
+    Item {
+        id: overlayLayer
+
+        anchors.fill: parent
+        z: 1000
     }
 }

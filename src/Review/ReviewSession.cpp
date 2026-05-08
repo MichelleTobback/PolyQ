@@ -10,6 +10,8 @@ void PolyQ::ReviewSession::Start(std::vector<Flashcard> cards, const ReviewSessi
 
 	m_reviewedCount = 0;
 	m_totalCount = static_cast<int>(cards.size());
+
+    m_statistics = {};
 }
 
 void PolyQ::ReviewSession::Clear()
@@ -45,6 +47,11 @@ int PolyQ::ReviewSession::TotalCount() const
     return m_totalCount;
 }
 
+const PolyQ::ReviewSessionStatistics& PolyQ::ReviewSession::GetStatistics() const
+{
+    return m_statistics;
+}
+
 PolyQ::ReviewResult PolyQ::ReviewSession::SubmitRating(ReviewRating rating)
 {
     if (m_queue.empty())
@@ -64,6 +71,14 @@ PolyQ::ReviewResult PolyQ::ReviewSession::SubmitRating(ReviewRating rating)
         result.type = ReviewResultType::EndlessAdvanced;
         result.rating = rating;
         return result;
+    }
+
+    switch (rating)
+    {
+    case ReviewRating::Again: ++m_statistics.againCount; break;
+    case ReviewRating::Hard:  ++m_statistics.hardCount; break;
+    case ReviewRating::Good:  ++m_statistics.goodCount; break;
+    case ReviewRating::Easy:  ++m_statistics.easyCount; break;
     }
 
     if (rating == ReviewRating::Again)

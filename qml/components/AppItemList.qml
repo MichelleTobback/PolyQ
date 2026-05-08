@@ -29,15 +29,13 @@ Item {
 
         anchors.fill: parent
         spacing: 8
-
         implicitHeight: addButton.implicitHeight
 
         AppButton {
             id: addButton
-
             text: "Add"
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignVCenter
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+            Layout.preferredWidth: parent.width / 2
             Layout.preferredHeight: Theme.buttonHeight
             onClicked: root.addClicked()
         }
@@ -55,10 +53,11 @@ Item {
             AppButton {
                 id: selectAllButton
                 text: "Select all"
-
-                Layout.fillWidth: true
+                
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                Layout.preferredWidth:
+                    (parent.width - spacing * 2 - deleteButton.width) / 2
                 Layout.preferredHeight: Theme.buttonHeight
-                Layout.alignment: Qt.AlignVCenter
 
                 onClicked: root.selectAll()
             }
@@ -67,9 +66,10 @@ Item {
                 id: deselectAllButton
                 text: "Deselect all"
 
-                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                Layout.preferredWidth:
+                    (parent.width - spacing * 2 - deleteButton.width) / 2
                 Layout.preferredHeight: Theme.buttonHeight
-                Layout.alignment: Qt.AlignVCenter
 
                 onClicked: root.clearSelection()
             }
@@ -102,7 +102,7 @@ Item {
 
         anchors.fill: parent
         anchors.margins: Theme.spacing
-        anchors.bottomMargin: root.toolbarHeight
+        anchors.bottomMargin: root.toolbarHeight + Theme.spacing
 
         spacing: root.itemSpacing
         clip: true
@@ -260,7 +260,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-
+        anchors.margins: Theme.spacing
         height: root.toolbarReservedHeight
 
         Loader {

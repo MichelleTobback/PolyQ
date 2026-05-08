@@ -11,14 +11,20 @@ AppPage {
 
     pageTitle: flashcardController.currentDeck.title
     showBackButton: true
+    showHeader: !root.showEndScreen
 
     property FlashcardController flashcardController
+
+    readonly property bool showEndScreen: root.flashcardController.reviewFinished
+                                          || root.flashcardController.reviewTotalCount === 0
 
     signal back()
 
     onBackClicked: root.back()
 
     RowLayout {
+        visible: !root.showEndScreen
+
         Layout.fillWidth: true
 
         Item {
@@ -38,6 +44,8 @@ AppPage {
     }
 
     FlashcardView {
+        visible: !root.showEndScreen
+
         Layout.fillWidth: true
         Layout.fillHeight: true
 
@@ -45,11 +53,29 @@ AppPage {
     }
 
     Loader {
+        visible: !root.showEndScreen
+
         Layout.fillWidth: true
+        Layout.alignment: Qt.AlignBottom
 
         sourceComponent: root.flashcardController.reviewMode === 0
                          ? endlessControlsComponent
                          : ratingControlsComponent
+    }
+
+    overlay: ReviewEndScreen {
+        visible: root.showEndScreen
+
+        anchors.fill: parent
+        z: 1000
+
+        flashcardController: root.flashcardController
+
+        onDone: root.back()
+
+        onReviewAgain: {
+            root.flashcardController.startDueReview()
+        }
     }
 
     Component {

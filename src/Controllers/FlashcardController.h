@@ -59,6 +59,12 @@ namespace PolyQ
         Q_INVOKABLE void reviewGood();
         Q_INVOKABLE void reviewEasy();
 
+        Q_PROPERTY(bool reviewFinished READ reviewFinished NOTIFY reviewProgressChanged)
+        Q_PROPERTY(int reviewAgainCount READ reviewAgainCount NOTIFY reviewProgressChanged)
+        Q_PROPERTY(int reviewHardCount READ reviewHardCount NOTIFY reviewProgressChanged)
+        Q_PROPERTY(int reviewGoodCount READ reviewGoodCount NOTIFY reviewProgressChanged)
+        Q_PROPERTY(int reviewEasyCount READ reviewEasyCount NOTIFY reviewProgressChanged)
+
         Q_INVOKABLE void loadDecks();
         Q_INVOKABLE void selectDeck(int deckId);
         Q_INVOKABLE void createDeck(const QString& name);
@@ -81,6 +87,12 @@ namespace PolyQ
         void startReviewSession(int deckId);
         void updateCurrentCardFromSession();
         void refreshSelectedDeck();
+
+        bool reviewFinished() const;
+        int reviewAgainCount() const { return m_reviewSession.GetStatistics().againCount; }
+        int reviewHardCount() const { return m_reviewSession.GetStatistics().hardCount; }
+        int reviewGoodCount() const { return m_reviewSession.GetStatistics().goodCount; }
+        int reviewEasyCount() const { return m_reviewSession.GetStatistics().easyCount; }
 
     private:
         int m_selectedDeckId = -1;

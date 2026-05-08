@@ -22,6 +22,14 @@ namespace PolyQ
         ReviewSessionMode mode{};
     };
 
+    struct ReviewSessionStatistics
+    {
+        int againCount = 0;
+        int hardCount = 0;
+        int goodCount = 0;
+        int easyCount = 0;
+    };
+
     class ReviewSession final
     {
     public:
@@ -32,6 +40,8 @@ namespace PolyQ
         int RemainingCount() const;
         int ReviewedCount() const;
         int TotalCount() const;
+
+        const ReviewSessionStatistics& GetStatistics() const;
 
         std::optional<Flashcard> CurrentCard() const;
 
@@ -44,5 +54,7 @@ namespace PolyQ
 
         int m_reviewedCount = 0;
         int m_totalCount = 0;
+
+        ReviewSessionStatistics m_statistics{};
     };
 }

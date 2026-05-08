@@ -74,8 +74,9 @@ AppPage {
                     Layout.fillWidth: true
                     text: "Import"
 
+
                     buttonColor: Theme.colors.surface
-                    pressedColor: Theme.colors.surfaceVariant
+                    pressedColor: Theme.colors.surfaceDisabled
                     textColor: Theme.colors.textPrimary
 
                     onClicked: root.flashcardController.importDeck()

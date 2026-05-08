@@ -68,7 +68,9 @@ AppPage {
 
     AppButton {
         text: root.isEditing ? "Save changes" : "Create card"
-        Layout.fillWidth: true
+        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+        Layout.preferredWidth: parent.width / 2
+        Layout.preferredHeight: Theme.buttonHeight
 
         onClicked: {
             if (root.isEditing) {
