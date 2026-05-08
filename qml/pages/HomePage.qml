@@ -108,8 +108,10 @@ AppPage {
     }
 
     Text {
-        visible: deckList.count === 0
+        visible: root.flashcardController.decks.rowCount() === 0
+
         text: "No decks yet. Create your first deck to get started."
+
         font.pixelSize: Theme.fontBody
         color: Theme.colors.textSecondary
         horizontalAlignment: Text.AlignHCenter
@@ -118,64 +120,120 @@ AppPage {
         Layout.fillWidth: true
     }
 
-    ListView {
-        id: deckList
-
-        visible: count > 0
+    AppItemList {
+        visible: root.flashcardController.decks.rowCount() > 0
 
         Layout.fillWidth: true
         Layout.fillHeight: true
 
-        spacing: Theme.spacing
-        clip: true
-
         model: root.flashcardController.decks
+        idRoleName: "deckId"
 
-        delegate: DeckCard {
-            width: deckList.width
+        itemHeight: 92
+        itemSpacing: Theme.spacing
 
-            title: model.title
-            subtitle: model.subtitle
-            enabled: model.enabled
-            opacity: model.enabled ? 1.0 : 0.55
-            
+        allItemIds: root.deckIds()
 
-            onClicked: {
-                root.flashcardController.selectDeck(model.deckId)
+        onDeleteRequested: function(ids) { 
+            root.flashcardController.deleteDecks(ids)
+        }
+        onItemClicked: function(id) {
+                root.flashcardController.selectDeck(id)
                 root.openDeck()
             }
-        }
 
-        ScrollBar.vertical: ScrollBar {
-            policy: ScrollBar.AlwaysOff
-        }
+        itemContent: Component {
+            RowLayout {
+                property var itemModel
+                property int itemId
+                property bool selected
+                property bool selectionMode
+                property var list
 
-        add: Transition {
-            NumberAnimation {
-                properties: "opacity"
-                from: 0
-                to: 1
-                duration: 180
+                anchors.fill: parent
+                spacing: 12
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    spacing: 2
+
+                    Text {
+                        text: itemModel.title
+                        font.pixelSize: Theme.fontBody
+                        font.bold: true
+                        color: Theme.colors.textPrimary
+                        
+                        maximumLineCount: 1
+                        elide: Text.ElideRight
+                    }
+
+                    Text {
+                        text: itemModel.subtitle
+                        font.pixelSize: Theme.fontSmall
+                        color: Theme.colors.textSecondary
+                        
+                        maximumLineCount: 1
+                        elide: Text.ElideRight
+                    }
+                }
             }
+        }
 
-            NumberAnimation {
-                properties: "scale"
-                from: 0.96
-                to: 1.0
-                duration: 180
+        normalToolbar: Component {
+            Item {
             }
         }
 
-        displaced: Transition {
-            NumberAnimation {
-                properties: "y"
-                duration: 180
+        selectionToolbar: Component {
+            RowLayout {
+                property var list
+
+                anchors.fill: parent
+                spacing: 8
+
+                AppButton {
+                    text: "Select all"
+                    Layout.fillWidth: true
+
+                    onClicked: list.selectAll()
+                }
+
+                AppButton {
+                    text: "Deselect all"
+                    Layout.fillWidth: true
+
+                    onClicked: list.clearSelection()
+                }
+
+                
+
+                AppIconButton {
+                    iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Bin.svg"
+                    iconColor: Theme.colors.error
+                    showBackground: false
+                    showBorder: false
+
+                    onClicked: list.requestDeleteSelected()
+                }
             }
         }
     }
 
-    Item {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 4
+    function deckIds() {
+        const ids = []
+        const decks = root.flashcardController.decks
+
+        if (!decks)
+            return ids
+
+        for (let i = 0; i < decks.rowCount(); ++i) {
+            const deck = decks.get(i)
+
+            if (deck)
+                ids.push(deck.deckId)
+        }
+
+        return ids
     }
 }

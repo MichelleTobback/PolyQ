@@ -19,9 +19,9 @@ QtObject {
         currentTheme = name
     }
 
-    readonly property int pageMargin: 24
-    readonly property int spacing: 18
-    readonly property int cardPadding: 20
+    readonly property int pageMargin: 12
+    readonly property int spacing: 12
+    readonly property int cardPadding: 18
 
     readonly property int radiusMedium: 18
     readonly property int radiusLarge: 24
@@ -36,4 +36,5 @@ QtObject {
 
     readonly property int animationFast: 120
     readonly property int animationMedium: 200
+    readonly property int animationSlow: 500
 }

@@ -11,6 +11,7 @@ Page {
     property string pageTitle: ""
     property color titleColor: Theme.colors.textOnPrimary
     property int titleSize: Theme.fontTitle
+
     property bool showBackButton: false
     property int contentSpacing: Theme.spacing
 
@@ -27,31 +28,45 @@ Page {
         anchors.fill: parent
         spacing: root.contentSpacing
 
+        // Header
         Rectangle {
             Layout.fillWidth: true
 
             color: Theme.colors.header
 
-            implicitHeight: headerLayout.implicitHeight + 12
+            radius: 0
+
+            implicitHeight: headerContainer.implicitHeight + 20
+
+            // subtle bottom separator
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+
+                height: 1
+                color: Qt.rgba(1, 1, 1, 0.05)
+            }
 
             ColumnLayout {
-                id: headerLayout
+                id: headerContainer
 
                 anchors.fill: parent
 
                 anchors.leftMargin: Theme.pageMargin
                 anchors.rightMargin: Theme.pageMargin
-                anchors.topMargin: 6
+                anchors.topMargin: 10
                 anchors.bottomMargin: 10
 
-                spacing: 2
+                spacing: 8
 
                 RowLayout {
                     Layout.fillWidth: true
+                    spacing: 10
 
+                    // Back button
                     AppIconButton {
-                        opacity: root.showBackButton ? 1.0 : 0.0
-                        enabled: root.showBackButton
+                        visible: root.showBackButton
 
                         iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Return.svg"
                         iconColor: Theme.colors.textOnPrimary
@@ -59,41 +74,46 @@ Page {
                         showBackground: false
                         showBorder: false
 
+                        width: 40
+                        height: 40
+
+                        backgroundColor: Qt.rgba(1, 1, 1, 0.06)
+                        pressedColor: Qt.rgba(1, 1, 1, 0.12)
+
                         onClicked: root.backClicked()
                     }
 
-                    Item {
+                    // Title section
+                    ColumnLayout {
                         Layout.fillWidth: true
+                        spacing: 2
+
+                        Text {
+                            text: root.pageTitle
+
+                            font.pixelSize: root.titleSize
+                            font.bold: true
+
+                            color: root.titleColor
+
+                            elide: Text.ElideRight
+
+                            Layout.fillWidth: true
+                        }
                     }
 
-                    Item {
+                    // Right-side actions
+                    RowLayout {
                         id: headerRightContainer
 
                         Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-
-                        implicitWidth: children.length > 0
-                                       ? children[0].implicitWidth
-                                       : 0
-
-                        implicitHeight: children.length > 0
-                                        ? children[0].implicitHeight
-                                        : 0
+                        spacing: 6
                     }
-                }
-
-                Text {
-                    text: root.pageTitle
-
-                    font.pixelSize: root.titleSize
-                    font.bold: true
-
-                    color: root.titleColor
-
-                    Layout.fillWidth: true
                 }
             }
         }
 
+        // Page content
         ColumnLayout {
             id: contentColumn
 

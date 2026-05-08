@@ -91,6 +91,11 @@ bool PolyQ::MockDeckRepository::DeleteDeck(int deckId)
     return true;
 }
 
+bool PolyQ::MockDeckRepository::DeleteDecks(const std::vector<int>& deckIds)
+{
+    return false;
+}
+
 bool PolyQ::MockDeckRepository::UpdateDeck(int deckId, const QString& title, const QString& subtitle, bool enabled)
 {
     const auto it = m_deckIndexById.find(deckId);

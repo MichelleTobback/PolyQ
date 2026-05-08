@@ -231,6 +231,38 @@ bool PolyQ::SqlDeckRepository::DeleteDeck(int deckId)
     return query.numRowsAffected() > 0;
 }
 
+bool PolyQ::SqlDeckRepository::DeleteDecks(const std::vector<int>& deckIds)
+{
+    if (deckIds.empty())
+        return true;
+
+    if (!m_database.transaction())
+        return false;
+
+    QSqlQuery query(m_database);
+    query.prepare("DELETE FROM decks WHERE id = :id");
+
+    for (int deckId : deckIds)
+    {
+        query.bindValue(":id", deckId);
+
+        if (!query.exec())
+        {
+            qWarning() << query.lastError().text();
+            m_database.rollback();
+            return false;
+        }
+    }
+
+    if (!m_database.commit())
+    {
+        qWarning() << m_database.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
 bool PolyQ::SqlDeckRepository::UpdateDeck(int deckId, const QString& title, const QString& subtitle, bool enabled)
 {
     QSqlQuery query(m_database);

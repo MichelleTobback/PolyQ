@@ -60,6 +60,7 @@ qt_add_qml_module(appPolyQComponents
         qml/components/AppButton.qml
         qml/components/AppIconButton.qml
         qml/components/AppBackButton.qml
+        qml/components/AppItemList.qml
         qml/components/AppCard.qml
         qml/components/AppPage.qml
         qml/components/AppTabButton.qml

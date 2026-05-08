@@ -30,6 +30,24 @@ namespace PolyQ
         {
         }
 
+        Q_INVOKABLE QVariantMap get(int index) const
+        {
+            QVariantMap deck;
+
+            if (index < 0 || index >= static_cast<int>(m_Decks.size()))
+                return deck;
+
+            const Deck& item = m_Decks[index];
+
+            deck["deckId"] = item.id;
+            deck["title"] = item.title;
+            deck["subtitle"] = item.subtitle;
+            deck["dueCount"] = item.dueCount;
+            deck["enabled"] = item.enabled;
+
+            return deck;
+        }
+
         int rowCount(const QModelIndex& parent = QModelIndex()) const override
         {
             if (parent.isValid())

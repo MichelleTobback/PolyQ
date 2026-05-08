@@ -152,6 +152,37 @@ void PolyQ::FlashcardController::updateDeck(const QString& title, const QString&
     emit selectedDeckChanged();
 }
 
+void PolyQ::FlashcardController::deleteDecks(const QVariantList& deckIds)
+{
+    if (deckIds.isEmpty())
+        return;
+
+    std::vector<int> ids;
+    ids.reserve(deckIds.size());
+
+    bool contiansCurrent = false;
+
+    for (const QVariant& value : deckIds)
+    {
+        int v = value.toInt();
+        ids.push_back(v);
+        contiansCurrent |= (v == m_selectedDeckId);
+    }
+
+    if (!m_pRepository->DeleteDecks(ids))
+        return;
+
+    loadDecks();
+    if (contiansCurrent)
+    {
+        loadCards(m_selectedDeckId);
+        startReviewSession(m_selectedDeckId);
+        refreshSelectedDeck();
+        emit cardChanged();
+        emit selectedDeckChanged();
+    }
+}
+
 void PolyQ::FlashcardController::createCard(const QString& front, const QString& back)
 {
     if (m_selectedDeckId < 0)

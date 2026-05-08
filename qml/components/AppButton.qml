@@ -15,7 +15,8 @@ Button {
 
     height: Theme.buttonHeight
 
-    scale: root.down ? 0.96 : 1.0
+    transformOrigin: Item.Center
+    scale: root.down ? 0.94 : 1.0
 
     Behavior on scale {
         NumberAnimation {
@@ -25,7 +26,11 @@ Button {
     }
 
     background: Rectangle {
+        id: backgroundRect
+
         radius: Theme.radiusMedium
+        scale: 1.0
+        transformOrigin: Item.Center
 
         color: root.enabled
                ? root.down ? root.pressedColor : root.buttonColor
@@ -34,6 +39,43 @@ Button {
         Behavior on color {
             ColorAnimation {
                 duration: Theme.animationFast
+            }
+        }
+
+        SequentialAnimation {
+            id: scaleShakeAnimation
+            running: false
+
+            NumberAnimation {
+                target: backgroundRect
+                property: "scale"
+                to: 1.06
+                duration: 95
+                easing.type: Easing.OutBack
+            }
+
+            NumberAnimation {
+                target: backgroundRect
+                property: "scale"
+                to: 0.985
+                duration: 85
+                easing.type: Easing.InOutQuad
+            }
+
+            NumberAnimation {
+                target: backgroundRect
+                property: "scale"
+                to: 1.025
+                duration: 75
+                easing.type: Easing.OutQuad
+            }
+
+            NumberAnimation {
+                target: backgroundRect
+                property: "scale"
+                to: 1.0
+                duration: 110
+                easing.type: Easing.OutCubic
             }
         }
     }
@@ -46,7 +88,6 @@ Button {
                : Theme.colors.textMuted
 
         font.bold: true
-
         font.pixelSize: root.textSize
         fontSizeMode: Text.Fit
         minimumPixelSize: root.minimumTextSize
@@ -55,7 +96,12 @@ Button {
         verticalAlignment: Text.AlignVCenter
 
         anchors.fill: parent
-
         elide: Text.ElideNone
+    }
+
+    onReleased: {
+        if (root.enabled) {
+            scaleShakeAnimation.restart()
+        }
     }
 }

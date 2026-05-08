@@ -20,6 +20,7 @@ ApplicationWindow {
     }
 
     Loader {
+        id: backgroundLoader
         anchors.fill: parent
         sourceComponent: Theme.colors.backgroundType === 1
             ? solidBackgroundComponent

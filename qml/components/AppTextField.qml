@@ -56,7 +56,7 @@ TextField {
         implicitHeight: 44
 
         radius: Theme.radiusMedium
-        color: Theme.colors.surfaceVariant
+        color: Theme.colors.surfaceAlt
 
         border.width: 1
         border.color: root.activeFocus

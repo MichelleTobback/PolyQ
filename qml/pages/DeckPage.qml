@@ -25,6 +25,9 @@ AppPage {
 
     headerRight: AppIconButton {
         iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Edit.svg"
+        iconColor: Theme.colors.textOnPrimary
+        showBackground: false
+        showBorder: false
         onClicked: root.editDeck()
     }
 
