@@ -12,6 +12,7 @@ Page {
     property color titleColor: Theme.colors.textOnPrimary
     property int titleSize: Theme.fontTitle
     property bool showBackButton: false
+    property int contentSpacing: Theme.spacing
 
     signal backClicked()
 
@@ -24,7 +25,7 @@ Page {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: Theme.spacing
+        spacing: root.contentSpacing
 
         Rectangle {
             Layout.fillWidth: true

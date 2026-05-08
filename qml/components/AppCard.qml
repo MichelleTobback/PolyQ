@@ -12,6 +12,9 @@ Item {
     property color color: Theme.colors.surface
     property real padding: Theme.cardPadding
 
+    property color borderColor: Theme.colors.border
+    property int borderWidth: 1
+
     property bool autoWidthToContent: false
     property bool autoHeightToContent: false
 
@@ -22,14 +25,15 @@ Item {
     implicitHeight: autoHeightToContent
         ? contentItem.implicitHeight + padding * 2
         : 0
+        
 
     Rectangle {
         id: card
         anchors.fill: parent
         radius: root.radius
         color: root.color
-        border.width: 1
-        border.color: Theme.colors.border
+        border.width: root.borderWidth
+        border.color: root.borderColor
     }
 
     MultiEffect {

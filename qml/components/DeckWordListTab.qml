@@ -14,6 +14,9 @@ Item {
 
     property FlashcardController flashcardController
 
+    property bool selectionMode: false
+    property var selectedCardIds: ({})
+
     ListView {
         anchors.fill: parent
         anchors.margins: Theme.spacing
@@ -26,6 +29,22 @@ Item {
             width: ListView.view.width
             height: 76
             autoWidthToContent: false
+            borderColor: root.isSelected(model.cardId)
+             ? Theme.colors.primary
+             : Theme.colors.border
+             borderWidth: root.isSelected(model.cardId)
+             ? 2
+             : 1
+
+            scale: cardTouch.pressed ? 0.97 : 1.0
+            transformOrigin: Item.Center
+
+            Behavior on scale {
+                NumberAnimation {
+                    duration: Theme.animationFast
+                    easing.type: Easing.OutCubic
+                }
+            }
 
             RowLayout {
                 anchors.fill: parent
@@ -64,12 +83,48 @@ Item {
                     Layout.minimumWidth: 0
 
                     Text {
+                        visible: !root.selectionMode
                         text: root.reviewTimeText(model.dueAt)
                         font.pixelSize: Theme.fontSmall
                         color: Theme.colors.textMuted
                     }
 
+                    Rectangle {
+                        visible: root.selectionMode
+
+                        Layout.alignment: Qt.AlignVCenter
+
+                        width: 24
+                        height: 24
+                        radius: width / 2
+
+                        color: root.isSelected(model.cardId)
+                               ? Theme.colors.primary
+                               : "transparent"
+
+                        border.width: 2
+                        border.color: root.isSelected(model.cardId)
+                                      ? Theme.colors.primary
+                                      : Theme.colors.border
+
+                        Image {
+                            anchors.centerIn: parent
+
+                            visible: root.isSelected(model.cardId)
+
+                            width: 14
+                            height: 14
+
+                            source: "qrc:/qt/qml/PolyQ/resources/icons/Check.svg"
+
+                            fillMode: Image.PreserveAspectFit
+                            smooth: true
+                            mipmap: true
+                        }
+                    }
+
                     AppIconButton {
+                        visible: !root.selectionMode
                         iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Edit.svg"
                         iconColor: Theme.colors.primary
                         showBackground: false
@@ -78,18 +133,70 @@ Item {
                     }
                 }
             }
+
+            TapHandler {
+                id: cardTouch
+
+                acceptedButtons: Qt.LeftButton
+
+                onTapped: {
+                    if (root.selectionMode)
+                        root.toggleSelection(model.cardId)
+                }
+
+                onLongPressed: {
+                    root.enterSelectionMode(model.cardId)
+                }
+            }
         }
     }
 
-    AppButton {
-        text: "Add card"
-
+    Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.margins: Theme.spacing
 
-        onClicked: root.addCard()
+        height: Theme.buttonHeight
+
+        AppButton {
+            visible: !root.selectionMode
+
+            anchors.fill: parent
+
+            text: "Add card"
+
+            onClicked: root.addCard()
+        }
+
+        RowLayout {
+            visible: root.selectionMode
+
+            anchors.fill: parent
+            spacing: 8
+
+            AppButton {
+                text: "Select all"
+                Layout.fillWidth: true
+
+                onClicked: root.selectAll()
+            }
+
+            AppButton {
+                text: "Deselect all"
+                Layout.fillWidth: true
+
+                onClicked: root.clearSelection()
+            }
+
+            AppIconButton {
+                iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Bin.svg"
+                iconColor: Theme.colors.error
+                showBackground: false
+                showBorder: false
+                onClicked: root.deleteSelected()
+            }
+        }
     }
 
     function reviewTimeText(dueAt) {
@@ -112,5 +219,67 @@ Item {
 
         const diffDays = Math.ceil(diffHours / 24)
         return "Due in " + diffDays + " d"
+    }
+
+    function isSelected(cardId) {
+        return selectedCardIds[cardId] === true
+    }
+
+    function enterSelectionMode(cardId) {
+        selectionMode = true
+
+        const updated = Object.assign({}, selectedCardIds)
+        updated[cardId] = true
+        selectedCardIds = updated
+    }
+
+    function toggleSelection(cardId) {
+        if (!selectionMode)
+            return
+
+        const updated = Object.assign({}, selectedCardIds)
+
+        if (updated[cardId])
+            delete updated[cardId]
+        else
+            updated[cardId] = true
+
+        selectedCardIds = updated
+
+        if (Object.keys(selectedCardIds).length === 0)
+            selectionMode = false
+    }
+
+    function selectAll() {
+        const updated = {}
+
+        for (let i = 0; i < root.flashcardController.cards.rowCount(); ++i) {
+            const card = root.flashcardController.cards.get(i)
+            updated[card.cardId] = true
+        }
+
+        selectedCardIds = updated
+        selectionMode = Object.keys(selectedCardIds).length > 0
+    }
+
+    function clearSelection() {
+        selectedCardIds = ({})
+        selectionMode = false
+    }
+
+    function selectedIdsArray() {
+        return Object.keys(selectedCardIds).map(id => Number(id))
+    }
+
+    function deleteSelected() {
+        const ids = selectedIdsArray()
+
+        if (ids.length === 0)
+            return
+
+        root.flashcardController.deleteCards(ids)
+
+        selectedCardIds = ({})
+        selectionMode = false
     }
 }

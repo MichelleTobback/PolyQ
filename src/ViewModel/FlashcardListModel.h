@@ -23,6 +23,8 @@ namespace PolyQ
 
         explicit FlashcardListModel(QObject* parent = nullptr);
 
+        Q_INVOKABLE QVariantMap get(int row) const;
+
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
         QVariant data(const QModelIndex& index, int role) const override;
         QHash<int, QByteArray> roleNames() const override;

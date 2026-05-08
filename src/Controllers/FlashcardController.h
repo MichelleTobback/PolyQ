@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QString>
 #include <QVariantMap>
+#include <QVariantList>
 #include <QTimer>
 #include <memory>
 
@@ -64,6 +65,7 @@ namespace PolyQ
         Q_INVOKABLE void updateDeck(const QString& title, const QString& subtitle, bool enabled);
         Q_INVOKABLE void createCard(const QString& front, const QString& back);
         Q_INVOKABLE void updateCard(int cardId, const QString& front, const QString& back);
+        Q_INVOKABLE void deleteCards(const QVariantList& cardIds);
 
     signals:
         void cardChanged();

@@ -28,5 +28,6 @@ namespace PolyQ
 		virtual bool UpdateCard(int cardId, const QString& front, const QString& back) = 0;
 		virtual bool UpdateCard(const Flashcard& card) = 0;
 		virtual bool DeleteCard(int cardId) = 0;
+		virtual bool DeleteCards(const std::vector<int>& cardIds) = 0;
 	};
 }

@@ -5,6 +5,22 @@ PolyQ::FlashcardListModel::FlashcardListModel(QObject* parent)
 {
 }
 
+QVariantMap PolyQ::FlashcardListModel::get(int row) const
+{
+    if (row < 0 || row >= static_cast<int>(m_cards.size()))
+        return {};
+
+    const Flashcard& card = m_cards[row];
+
+    return {
+        { "cardId", card.id },
+        { "deckId", card.deckId },
+        { "front", card.front },
+        { "back", card.back },
+        { "dueAt", card.dueAt }
+    };
+}
+
 int PolyQ::FlashcardListModel::rowCount(const QModelIndex& parent) const
 {
     if (parent.isValid())

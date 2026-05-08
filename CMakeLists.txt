@@ -46,6 +46,9 @@ qt_add_qml_module(appPolyQ
         resources/icons/Cog.svg
         resources/icons/Edit.svg
         resources/icons/Return.svg
+        resources/icons/Bin.svg
+        resources/icons/Navigation-Menu.svg
+        resources/icons/Check.svg
 )
 
 qt_add_qml_module(appPolyQComponents

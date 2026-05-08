@@ -189,6 +189,11 @@ bool PolyQ::MockDeckRepository::DeleteCard(int cardId)
     return true;
 }
 
+bool PolyQ::MockDeckRepository::DeleteCards(const std::vector<int>& cardIds)
+{
+    return false;
+}
+
 bool PolyQ::MockDeckRepository::HasDeck(int deckId) const
 {
     return m_deckIndexById.find(deckId) != m_deckIndexById.end();

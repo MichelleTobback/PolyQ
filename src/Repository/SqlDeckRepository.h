@@ -28,6 +28,7 @@ namespace PolyQ
         bool UpdateCard(int cardId, const QString& front, const QString& back) override;
         bool UpdateCard(const Flashcard& card) override;
         bool DeleteCard(int cardId) override;
+        bool DeleteCards(const std::vector<int>& cardIds) override;
 
     private:
         bool CreateTables();
