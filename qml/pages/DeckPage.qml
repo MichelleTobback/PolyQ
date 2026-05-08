@@ -49,7 +49,7 @@ AppPage {
         Layout.leftMargin: -Theme.pageMargin
         Layout.rightMargin: -Theme.pageMargin
 
-        clip: true
+        clip: false
 
         currentIndex: tabBar.currentIndex
         onCurrentIndexChanged: tabBar.currentIndex = currentIndex

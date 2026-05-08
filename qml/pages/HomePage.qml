@@ -121,6 +121,7 @@ AppPage {
     }
 
     AppItemList {
+        id: deckList
         visible: root.flashcardController.decks.rowCount() > 0
 
         Layout.fillWidth: true
@@ -130,7 +131,6 @@ AppPage {
         idRoleName: "deckId"
 
         itemHeight: 92
-        itemSpacing: Theme.spacing
 
         allItemIds: root.deckIds()
 
@@ -141,6 +141,8 @@ AppPage {
                 root.flashcardController.selectDeck(id)
                 root.openDeck()
             }
+
+        normalToolbar: Item {}
 
         itemContent: Component {
             RowLayout {
@@ -176,45 +178,6 @@ AppPage {
                         maximumLineCount: 1
                         elide: Text.ElideRight
                     }
-                }
-            }
-        }
-
-        normalToolbar: Component {
-            Item {
-            }
-        }
-
-        selectionToolbar: Component {
-            RowLayout {
-                property var list
-
-                anchors.fill: parent
-                spacing: 8
-
-                AppButton {
-                    text: "Select all"
-                    Layout.fillWidth: true
-
-                    onClicked: list.selectAll()
-                }
-
-                AppButton {
-                    text: "Deselect all"
-                    Layout.fillWidth: true
-
-                    onClicked: list.clearSelection()
-                }
-
-                
-
-                AppIconButton {
-                    iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Bin.svg"
-                    iconColor: Theme.colors.error
-                    showBackground: false
-                    showBorder: false
-
-                    onClicked: list.requestDeleteSelected()
                 }
             }
         }

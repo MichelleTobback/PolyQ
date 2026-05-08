@@ -15,6 +15,7 @@ Item {
     property FlashcardController flashcardController
 
     AppItemList {
+        id: cardList
         anchors.fill: parent
 
         model: root.flashcardController.cards
@@ -87,49 +88,6 @@ Item {
                             itemModel.back
                         )
                     }
-                }
-            }
-        }
-
-        normalToolbar: Component {
-            AppButton {
-                property var list
-
-                text: "Add card"
-                anchors.fill: parent
-
-                onClicked: list.addClicked()
-            }
-        }
-
-        selectionToolbar: Component {
-            RowLayout {
-                property var list
-
-                anchors.fill: parent
-                spacing: 8
-
-                AppButton {
-                    text: "Select all"
-                    Layout.fillWidth: true
-
-                    onClicked: list.selectAll()
-                }
-
-                AppButton {
-                    text: "Deselect all"
-                    Layout.fillWidth: true
-
-                    onClicked: list.clearSelection()
-                }
-
-                AppIconButton {
-                    iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Bin.svg"
-                    iconColor: Theme.colors.error
-                    showBackground: false
-                    showBorder: false
-
-                    onClicked: list.requestDeleteSelected()
                 }
             }
         }

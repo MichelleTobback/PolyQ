@@ -32,7 +32,7 @@ QtObject {
     readonly property int fontBody: 16
     readonly property int fontSmall: 14
 
-    readonly property int buttonHeight: 54
+    readonly property int buttonHeight: 32
 
     readonly property int animationFast: 120
     readonly property int animationMedium: 200

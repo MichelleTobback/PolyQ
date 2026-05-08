@@ -16,9 +16,80 @@ Item {
     property string idRoleName: "id"
     property var allItemIds: []
 
+    readonly property real toolbarHeight: activeToolbarLoader.item
+        ? activeToolbarLoader.item.implicitHeight
+        : 0
+
+    readonly property real toolbarReservedHeight: toolbarHeight + Theme.spacing * 2
+
     property Component itemContent
-    property Component normalToolbar
-    property Component selectionToolbar
+
+    property Component normalToolbar: RowLayout {
+        property var list
+
+        anchors.fill: parent
+        spacing: 8
+
+        implicitHeight: addButton.implicitHeight
+
+        AppButton {
+            id: addButton
+
+            text: "Add"
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredHeight: Theme.buttonHeight
+            onClicked: root.addClicked()
+        }
+    }
+
+    property Component selectionToolbar: Component {
+        RowLayout {
+            property var list
+
+            anchors.fill: parent
+            spacing: 8
+
+            implicitHeight: Theme.buttonHeight
+
+            AppButton {
+                id: selectAllButton
+                text: "Select all"
+
+                Layout.fillWidth: true
+                Layout.preferredHeight: Theme.buttonHeight
+                Layout.alignment: Qt.AlignVCenter
+
+                onClicked: root.selectAll()
+            }
+
+            AppButton {
+                id: deselectAllButton
+                text: "Deselect all"
+
+                Layout.fillWidth: true
+                Layout.preferredHeight: Theme.buttonHeight
+                Layout.alignment: Qt.AlignVCenter
+
+                onClicked: root.clearSelection()
+            }
+
+            AppIconButton {
+                id: deleteButton
+
+                iconSource: "qrc:/qt/qml/PolyQ/resources/icons/Bin.svg"
+                iconColor: Theme.colors.textPrimary
+                showBackground: false
+                showBorder: false
+
+                Layout.preferredWidth: Theme.buttonHeight
+                Layout.preferredHeight: Theme.buttonHeight
+                Layout.alignment: Qt.AlignVCenter
+
+                onClicked: root.requestDeleteSelected()
+            }
+        }
+    }
 
     property bool selectionMode: false
     property var selectedItemIds: ({})
@@ -31,122 +102,35 @@ Item {
 
         anchors.fill: parent
         anchors.margins: Theme.spacing
-        anchors.bottomMargin: Theme.spacing + Theme.buttonHeight + Theme.spacing
+        anchors.bottomMargin: root.toolbarHeight
 
         spacing: root.itemSpacing
         clip: true
         model: root.model
 
-        delegate: AppCard {
-            id: card
+        delegate: Item {
+            id: delegateRoot
 
             width: ListView.view.width
             height: root.itemHeight
-            autoWidthToContent: false
 
             readonly property int itemId: model[root.idRoleName]
 
             readonly property real visibleTop: listView.contentY
             readonly property real visibleBottom: listView.contentY + listView.height
-
             readonly property real visibleHeight: Math.max(
                 0,
                 Math.min(y + height, visibleBottom) - Math.max(y, visibleTop)
             )
 
-            readonly property real visibleRatio: Math.max(
+            readonly property real rawVisibleRatio: Math.max(
                 0,
                 Math.min(1, visibleHeight / height)
             )
 
-            opacity: visibleRatio
-
-            borderColor: root.isSelected(card.itemId)
-                         ? Theme.colors.primary
-                         : Theme.colors.border
-            borderWidth: root.isSelected(card.itemId) ? 2 : 1
-
-            scale: cardTouch.pressed ? 0.97 : 1.0
-            transformOrigin: Item.Center
-
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: Theme.animationFast
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            Behavior on scale {
-                NumberAnimation {
-                    duration: Theme.animationFast
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            RowLayout {
-                anchors.fill: parent
-                spacing: 8
-
-                Loader {
-                    id: contentLoader
-
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.minimumWidth: 0
-
-                    sourceComponent: root.itemContent
-
-                    onLoaded: {
-                        item.itemModel = model
-                        item.itemId = card.itemId
-                        item.list = root
-                    }
-                }
-
-                Binding {
-                    target: contentLoader.item
-                    property: "selected"
-                    value: root.isSelected(card.itemId)
-                    when: contentLoader.status === Loader.Ready
-                }
-
-                Binding {
-                    target: contentLoader.item
-                    property: "selectionMode"
-                    value: root.selectionMode
-                    when: contentLoader.status === Loader.Ready
-                }
-
-                Rectangle {
-                    visible: root.selectionMode
-
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    Layout.preferredWidth: 24
-                    Layout.preferredHeight: 24
-
-                    radius: width / 2
-
-                    color: root.isSelected(card.itemId)
-                           ? Theme.colors.primary
-                           : "transparent"
-
-                    border.width: 2
-                    border.color: root.isSelected(card.itemId)
-                                  ? Theme.colors.primary
-                                  : Theme.colors.border
-
-                    IconImage {
-                        anchors.centerIn: parent
-                        visible: root.isSelected(card.itemId)
-
-                        width: 14
-                        height: 14
-
-                        source: "qrc:/qt/qml/PolyQ/resources/icons/Check.svg"
-                        color: Theme.colors.textPrimary
-                    }
-                }
-            }
+            readonly property real visibleRatio: rawVisibleRatio >= 1.0
+                ? 1.0
+                : 0.5 * rawVisibleRatio
 
             TapHandler {
                 id: cardTouch
@@ -155,40 +139,148 @@ Item {
 
                 onTapped: {
                     if (root.selectionMode)
-                        root.toggleSelection(card.itemId)
-                    else 
-                        root.itemClicked(card.itemId)
+                        root.toggleSelection(delegateRoot.itemId)
+                    else
+                        root.itemClicked(delegateRoot.itemId)
                 }
 
                 onLongPressed: {
-                    root.enterSelectionMode(card.itemId)
+                    root.enterSelectionMode(delegateRoot.itemId)
+                }
+            }
+
+            AppCard {
+                id: card
+
+                anchors.fill: parent
+                autoWidthToContent: false
+
+                opacity: delegateRoot.visibleRatio
+
+                borderColor: root.isSelected(delegateRoot.itemId)
+                             ? Theme.colors.primary
+                             : Theme.colors.border
+
+                borderWidth: root.isSelected(delegateRoot.itemId) ? 2 : 1
+
+                scale: cardTouch.pressed ? 0.97 : 1.0
+                transformOrigin: Item.Center
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Theme.animationFast
+                        easing.type: Easing.Linear
+                    }
+                }
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: Theme.animationFast
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 8
+
+                    Loader {
+                        id: contentLoader
+
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.minimumWidth: 0
+
+                        sourceComponent: root.itemContent
+
+                        onLoaded: {
+                            item.itemModel = model
+                            item.itemId = delegateRoot.itemId
+                            item.list = root
+                        }
+                    }
+
+                    Binding {
+                        target: contentLoader.item
+                        property: "selected"
+
+                        value: root.isSelected(delegateRoot.itemId)
+
+                        when: contentLoader.status === Loader.Ready
+                    }
+
+                    Binding {
+                        target: contentLoader.item
+                        property: "selectionMode"
+
+                        value: root.selectionMode
+
+                        when: contentLoader.status === Loader.Ready
+                    }
+
+                    Rectangle {
+                        visible: root.selectionMode
+
+                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                        Layout.preferredWidth: 24
+                        Layout.preferredHeight: 24
+
+                        radius: width / 2
+
+                        color: root.isSelected(delegateRoot.itemId)
+                               ? Theme.colors.primary
+                               : "transparent"
+
+                        border.width: 2
+
+                        border.color: root.isSelected(delegateRoot.itemId)
+                                      ? Theme.colors.primary
+                                      : Theme.colors.border
+
+                        IconImage {
+                            anchors.centerIn: parent
+
+                            visible: root.isSelected(delegateRoot.itemId)
+
+                            width: 14
+                            height: 14
+
+                            source: "qrc:/qt/qml/PolyQ/resources/icons/Check.svg"
+                            color: Theme.colors.textOnPrimary
+                        }
+                    }
                 }
             }
         }
     }
 
     Item {
+        id: toolbarContainer
+
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.margins: Theme.spacing
 
-        height: Theme.buttonHeight
-
-        Loader {
-            anchors.fill: parent
-            visible: !root.selectionMode
-            sourceComponent: root.normalToolbar
-
-            onLoaded: item.list = root
-        }
+        height: root.toolbarReservedHeight
 
         Loader {
-            anchors.fill: parent
-            visible: root.selectionMode
-            sourceComponent: root.selectionToolbar
+            id: activeToolbarLoader
 
-            onLoaded: item.list = root
+            anchors.left: parent.left
+            anchors.right: parent.right
+
+            anchors.leftMargin: Theme.spacing
+            anchors.rightMargin: Theme.spacing
+
+            anchors.verticalCenter: parent.verticalCenter
+
+            sourceComponent: root.selectionMode
+                ? root.selectionToolbar
+                : root.normalToolbar
+
+            onLoaded: {
+                item.list = root
+            }
         }
     }
 
@@ -201,6 +293,7 @@ Item {
 
         const updated = Object.assign({}, selectedItemIds)
         updated[itemId] = true
+
         selectedItemIds = updated
     }
 
