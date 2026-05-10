@@ -56,8 +56,8 @@ AppPage {
 
         DeckOverviewTab {
             flashcardController: root.flashcardController
-            onStartDueReview: root.startDueReview()
-            onStartEndlessReview: root.startEndlessReview()
+            onStartEndlessReview: openReviewModeSelection(0)
+            onStartDueReview: openReviewModeSelection(1)
         }
 
         DeckWordListTab {

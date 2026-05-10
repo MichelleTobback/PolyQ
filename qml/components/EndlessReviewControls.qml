@@ -28,22 +28,14 @@ ColumnLayout {
         spacing: 8
 
         AppButton {
-            text: "Again"
-
-            buttonColor: Theme.colors.danger
-            pressedColor: Theme.colors.dangerPressed
-
-            Layout.fillWidth: true
-
-            onClicked: root.flashcardController.reviewAgain()
-        }
-
-        AppButton {
             text: "Next"
 
             Layout.fillWidth: true
 
-            onClicked: root.flashcardController.reviewGood()
+            onClicked: {
+                root.flashcardController.reviewGood()
+                root.flashcardController.nextCard()
+            }
         }
     }
 }

@@ -47,9 +47,36 @@ int PolyQ::ReviewSession::TotalCount() const
     return m_totalCount;
 }
 
+bool PolyQ::ReviewSession::CanContinue() const
+{
+    switch (m_settings.mode)
+    {
+    case ReviewSessionMode::AllCards:
+        return true;
+        break;
+
+    case ReviewSessionMode::SpacedRepetition:
+        break;
+    }
+    return false;
+}
+
 const PolyQ::ReviewSessionStatistics& PolyQ::ReviewSession::GetStatistics() const
 {
     return m_statistics;
+}
+
+PolyQ::ReviewResult PolyQ::ReviewSession::SubmitAnswer(const QString& answer)
+{
+    if (m_queue.empty())
+        return {};
+
+    const AnswerCheckResult answerResult = m_validator.Check(answer, CurrentCard()->back, m_settings.validation);
+
+    ReviewResult result = SubmitRating(answerResult.suggestedRating);
+    result.answerResult = answerResult;
+
+    return result;
 }
 
 PolyQ::ReviewResult PolyQ::ReviewSession::SubmitRating(ReviewRating rating)

@@ -18,63 +18,89 @@ AppPage {
     readonly property bool showEndScreen: root.flashcardController.reviewFinished
                                           || root.flashcardController.reviewTotalCount === 0
 
+    readonly property bool keyboardVisible: Qt.inputMethod.visible
+    readonly property real keyboardHeight: root.keyboardVisible
+                                       ? Math.min(Qt.inputMethod.keyboardRectangle.height, height * 0.42) : 0
+
     signal back()
 
     onBackClicked: root.back()
 
-    RowLayout {
-        visible: !root.showEndScreen
-
-        Layout.fillWidth: true
-
-        Item {
-            Layout.fillWidth: true
-        }
-
-        Text {
-            text: root.flashcardController.reviewedCount
-                  + " / "
-                  + root.flashcardController.reviewTotalCount
-
-            font.pixelSize: Theme.fontBody
-            color: Theme.colors.textSecondary
-
-            Layout.alignment: Qt.AlignTop | Qt.AlignRight
-        }
-    }
-
-    FlashcardView {
+    ColumnLayout {
         visible: !root.showEndScreen
 
         Layout.fillWidth: true
         Layout.fillHeight: true
+        spacing: Theme.spacing
 
-        controller: root.flashcardController
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: implicitHeight
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            Text {
+                text: root.flashcardController.reviewedCount
+                      + " / "
+                      + root.flashcardController.reviewTotalCount
+
+                font.pixelSize: Theme.fontBody
+                color: Theme.colors.textSecondary
+
+                Layout.alignment: Qt.AlignTop | Qt.AlignRight
+            }
+        }
+
+        FlashcardView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
+
+            controller: root.flashcardController
+        }
+
+        Loader {
+            Layout.fillWidth: true
+            Layout.preferredHeight: item ? item.implicitHeight : 0
+
+            sourceComponent: root.flashcardController.reviewInputMode === 1
+                 ? inputControlsComponent
+                 : root.flashcardController.reviewSessionMode === 1 
+                    ? ratingControlsComponent 
+                    : endlessControlsComponent
+        }
+
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: root.keyboardHeight
+
+            Behavior on Layout.preferredHeight {
+                NumberAnimation {
+                    duration: 180
+                    easing.type: Easing.OutCubic
+                }
+            }
+        }
     }
 
-    Loader {
-        visible: !root.showEndScreen
-
-        Layout.fillWidth: true
-        Layout.alignment: Qt.AlignBottom
-
-        sourceComponent: root.flashcardController.reviewMode === 0
-                         ? endlessControlsComponent
-                         : ratingControlsComponent
-    }
-
-    overlay: ReviewEndScreen {
-        visible: root.showEndScreen
-
+    overlay: Item {
         anchors.fill: parent
-        z: 1000
 
-        flashcardController: root.flashcardController
+        ReviewEndScreen {
+            visible: root.showEndScreen
 
-        onDone: root.back()
+            anchors.fill: parent
+            z: 1000
 
-        onReviewAgain: {
-            root.flashcardController.startDueReview()
+            flashcardController: root.flashcardController
+
+            onDone: root.back()
+
+            onReviewAgain: {
+                root.flashcardController.startDueReview()
+            }
         }
     }
 
@@ -90,6 +116,14 @@ AppPage {
         id: endlessControlsComponent
 
         EndlessReviewControls {
+            flashcardController: root.flashcardController
+        }
+    }
+
+    Component {
+        id: inputControlsComponent
+
+        InputReviewControls {
             flashcardController: root.flashcardController
         }
     }

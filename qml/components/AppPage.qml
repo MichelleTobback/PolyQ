@@ -18,13 +18,15 @@ Page {
 
     signal backClicked()
 
-    default property alias content: contentColumn.data
+    default property alias content: pageContent.data
     property alias headerRight: headerRightContainer.data
     property alias overlay: overlayLayer.data
 
     background: Rectangle {
         color: "transparent"
     }
+
+    focus: true
 
     ColumnLayout {
         anchors.fill: parent
@@ -34,8 +36,11 @@ Page {
             id: header
 
             Layout.fillWidth: true
+
             Layout.preferredHeight: root.showHeader
-                                    ? headerContainer.implicitHeight + 20
+                                    ? headerContainer.implicitHeight
+                                      + SafeArea.margins.top
+                                      + 20
                                     : 0
 
             visible: true
@@ -44,20 +49,6 @@ Page {
 
             color: Theme.colors.header
             radius: 0
-
-            Behavior on Layout.preferredHeight {
-                NumberAnimation {
-                    duration: Theme.animationSlow
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: Theme.animationSlow
-                    easing.type: Easing.OutCubic
-                }
-            }
 
             Rectangle {
                 anchors.left: parent.left
@@ -73,11 +64,11 @@ Page {
 
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: parent.top
+                anchors.bottom: parent.bottom
 
                 anchors.leftMargin: Theme.pageMargin
                 anchors.rightMargin: Theme.pageMargin
-                anchors.topMargin: 10
+                anchors.bottomMargin: 10
 
                 spacing: 8
 
@@ -112,7 +103,6 @@ Page {
 
                             font.pixelSize: root.titleSize
                             font.bold: true
-
                             color: root.titleColor
 
                             elide: Text.ElideRight
@@ -131,8 +121,8 @@ Page {
             }
         }
 
-        ColumnLayout {
-            id: contentColumn
+        Item {
+            id: contentWrapper
 
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -141,7 +131,16 @@ Page {
             Layout.rightMargin: Theme.pageMargin
             Layout.bottomMargin: Theme.pageMargin
 
-            spacing: Theme.spacing
+            ColumnLayout {
+                id: pageContent
+
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+
+                spacing: Theme.spacing
+            }
         }
     }
 

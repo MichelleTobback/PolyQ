@@ -42,6 +42,7 @@ AppPage {
             AppTextArea {
                 id: frontField
                 Layout.fillWidth: true
+                Layout.preferredHeight: 80
                 text: root.frontText
                 animatedPlaceholder: "Question, word or phrase"
             }
@@ -56,6 +57,7 @@ AppPage {
             AppTextArea {
                 id: backField
                 Layout.fillWidth: true
+                Layout.preferredHeight: 80
                 text: root.backText
                 animatedPlaceholder: "Answer or translation"
             }

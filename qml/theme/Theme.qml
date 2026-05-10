@@ -18,7 +18,7 @@ QtObject {
 
         currentTheme = name
     }
-
+    
     readonly property int pageMargin: 12
     readonly property int spacing: 12
     readonly property int cardPadding: 18

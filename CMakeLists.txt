@@ -4,7 +4,7 @@ project(PolyQ VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Sql)
+find_package(Qt6 REQUIRED COMPONENTS Quick Sql Gui Core)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
@@ -32,6 +32,9 @@ qt_add_executable(appPolyQ
     src/Review/ReviewSession.h
     src/Review/ReviewSession.cpp
     src/Review/ReviewResult.h
+    src/Review/ReviewTypes.h
+    src/Review/AnswerValidator.cpp
+    src/Review/AnswerValidator.h
 )
 
 qt_add_qml_module(appPolyQ
@@ -76,6 +79,11 @@ qt_add_qml_module(appPolyQComponents
         qml/components/RatingReviewControls.qml
         qml/components/EndlessReviewControls.qml
         qml/components/ReviewEndScreen.qml
+        qml/components/InputReviewControls.qml
+        qml/components/ReviewControlsBase.qml
+        qml/components/ReviewFeedbackOverlay.qml
+        qml/components/ReviewModeSelectionPage.qml
+        qml/components/SettingToggle.qml
 )
 
 set(qml_singletons
@@ -123,6 +131,8 @@ set_target_properties(appPolyQ PROPERTIES
 target_link_libraries(appPolyQ
     PRIVATE Qt6::Quick
     PRIVATE Qt6::Sql
+    PRIVATE Qt6::Gui
+    PRIVATE Qt6::Core
 )
 
 install(TARGETS appPolyQ

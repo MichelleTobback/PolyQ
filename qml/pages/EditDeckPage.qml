@@ -43,6 +43,7 @@ AppPage {
             AppTextArea {
                 id: subtitleField
                 Layout.fillWidth: true
+                Layout.preferredHeight: 80
                 text: root.flashcardController.currentDeck.subtitle
                 animatedPlaceholder: "Subtitle or description"
             }

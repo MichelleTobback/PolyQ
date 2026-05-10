@@ -2,6 +2,9 @@
 
 #include "../Repository/SqlDeckRepository.h"
 
+#include <QDateTime>
+#include <QtGlobal>
+
 PolyQ::FlashcardController::FlashcardController(QObject* parent)
     : QObject(parent)
 {
@@ -40,7 +43,7 @@ QVariantMap PolyQ::FlashcardController::currentDeck() const
     if (m_selectedDeckId < 0)
         return {};
 
-    const std::optional<Deck> deck = m_DeckModel.deckById(m_selectedDeckId);
+    const std::optional<Deck> deck = m_deckModel.deckById(m_selectedDeckId);
 
     if (!deck.has_value())
         return {};
@@ -65,6 +68,30 @@ int PolyQ::FlashcardController::cardIndex() const
     return m_cardIndex;
 }
 
+bool PolyQ::FlashcardController::canContinueReview() const
+{
+    return m_reviewSession.CanContinue();
+}
+
+bool PolyQ::FlashcardController::reviewFinished() const
+{
+    return m_reviewSession.TotalCount() > 0 && !m_reviewSession.HasCards();
+}
+
+void PolyQ::FlashcardController::checkResults(const QString& userInput)
+{
+    const ReviewResult result = m_reviewSession.SubmitAnswer(userInput);
+
+    applyReviewResult(result);
+
+    if (result.answerResult.has_value())
+        setLastAnswerState(result.answerResult->accepted ? 1 : 2);
+    else
+        setLastAnswerState(0);
+
+    showAnswer();
+}
+
 void PolyQ::FlashcardController::showAnswer()
 {
     if (m_showingAnswer)
@@ -74,43 +101,62 @@ void PolyQ::FlashcardController::showAnswer()
     emit showingAnswerChanged();
 }
 
-void PolyQ::FlashcardController::startDueReview()
+void PolyQ::FlashcardController::nextCard()
 {
-    m_reviewSettings.mode = ReviewSessionMode::SpacedRepetition;
-    startReviewSession(m_selectedDeckId);
-    emit reviewModeChanged();
+    updateCurrentCardFromSession();
 }
 
-void PolyQ::FlashcardController::startEndlessReview()
+void PolyQ::FlashcardController::startConfiguredReview()
 {
-    m_reviewSettings.mode = ReviewSessionMode::AllCards;
     startReviewSession(m_selectedDeckId);
+
+    emit reviewModeChanged();
+    emit reviewProgressChanged();
+}
+
+void PolyQ::FlashcardController::configureReviewSettings(
+    int sessionMode, 
+    int inputMode, 
+    int strictness, 
+    bool caseSensitive, 
+    bool ignoreAccents, 
+    bool ignorePunctuation)
+{
+    //TODO - move to viewmodel
+    m_reviewSettings.mode = static_cast<ReviewSessionMode>(sessionMode);
+    m_reviewSettings.inputMode = static_cast<ReviewInputMode>(inputMode);
+    m_reviewSettings.validation.strictness = static_cast<SpellingStrictness>(strictness);
+
+    m_reviewSettings.validation.caseSensitive = caseSensitive;
+    m_reviewSettings.validation.ignoreAccents = ignoreAccents;
+    m_reviewSettings.validation.ignorePunctuation = ignorePunctuation;
+
     emit reviewModeChanged();
 }
 
 void PolyQ::FlashcardController::reviewAgain()
 {
-    reviewCard(0);
+    reviewCard(ReviewRating::Again);
 }
 
 void PolyQ::FlashcardController::reviewHard()
 {
-    reviewCard(1);
+    reviewCard(ReviewRating::Hard);
 }
 
 void PolyQ::FlashcardController::reviewGood()
 {
-    reviewCard(2);
+    reviewCard(ReviewRating::Good);
 }
 
 void PolyQ::FlashcardController::reviewEasy()
 {
-    reviewCard(3);
+    reviewCard(ReviewRating::Easy);
 }
 
 void PolyQ::FlashcardController::loadDecks()
 {
-    m_DeckModel.setDecks(m_pRepository->GetAllDecks());
+    m_deckModel.setDecks(m_pRepository->GetAllDecks());
 }
 
 void PolyQ::FlashcardController::selectDeck(int deckId)
@@ -126,6 +172,8 @@ void PolyQ::FlashcardController::selectDeck(int deckId)
     emit selectedDeckChanged();
     emit cardChanged();
     emit showingAnswerChanged();
+    emit reviewProgressChanged();
+    emit canContinueReviewChanged();
 }
 
 void PolyQ::FlashcardController::createDeck(const QString& name)
@@ -139,7 +187,10 @@ void PolyQ::FlashcardController::createDeck(const QString& name)
         loadDecks();
 }
 
-void PolyQ::FlashcardController::updateDeck(const QString& title, const QString& subtitle, bool enabled)
+void PolyQ::FlashcardController::updateDeck(
+    const QString& title,
+    const QString& subtitle,
+    bool enabled)
 {
     if (m_selectedDeckId < 0)
         return;
@@ -160,27 +211,33 @@ void PolyQ::FlashcardController::deleteDecks(const QVariantList& deckIds)
     std::vector<int> ids;
     ids.reserve(deckIds.size());
 
-    bool contiansCurrent = false;
+    bool containsCurrent = false;
 
     for (const QVariant& value : deckIds)
     {
-        int v = value.toInt();
-        ids.push_back(v);
-        contiansCurrent |= (v == m_selectedDeckId);
+        const int id = value.toInt();
+
+        ids.push_back(id);
+        containsCurrent |= id == m_selectedDeckId;
     }
 
     if (!m_pRepository->DeleteDecks(ids))
         return;
 
     loadDecks();
-    if (contiansCurrent)
-    {
-        loadCards(m_selectedDeckId);
-        startReviewSession(m_selectedDeckId);
-        refreshSelectedDeck();
-        emit cardChanged();
-        emit selectedDeckChanged();
-    }
+
+    if (!containsCurrent)
+        return;
+
+    m_selectedDeckId = -1;
+    m_cardModel.setCards({});
+    startReviewSession(-1);
+
+    emit selectedDeckChanged();
+    emit cardChanged();
+    emit showingAnswerChanged();
+    emit reviewProgressChanged();
+    emit canContinueReviewChanged();
 }
 
 void PolyQ::FlashcardController::createCard(const QString& front, const QString& back)
@@ -204,9 +261,14 @@ void PolyQ::FlashcardController::createCard(const QString& front, const QString&
     emit selectedDeckChanged();
     emit cardChanged();
     emit showingAnswerChanged();
+    emit reviewProgressChanged();
+    emit canContinueReviewChanged();
 }
 
-void PolyQ::FlashcardController::updateCard(int cardId, const QString& front, const QString& back)
+void PolyQ::FlashcardController::updateCard(
+    int cardId,
+    const QString& front,
+    const QString& back)
 {
     if (m_selectedDeckId < 0)
         return;
@@ -227,6 +289,8 @@ void PolyQ::FlashcardController::updateCard(int cardId, const QString& front, co
     emit selectedDeckChanged();
     emit cardChanged();
     emit showingAnswerChanged();
+    emit reviewProgressChanged();
+    emit canContinueReviewChanged();
 }
 
 void PolyQ::FlashcardController::deleteCards(const QVariantList& cardIds)
@@ -251,13 +315,20 @@ void PolyQ::FlashcardController::deleteCards(const QVariantList& cardIds)
     emit cardChanged();
     emit selectedDeckChanged();
     emit showingAnswerChanged();
+    emit reviewProgressChanged();
+    emit canContinueReviewChanged();
 }
 
-void PolyQ::FlashcardController::reviewCard(int rating)
+void PolyQ::FlashcardController::reviewCard(ReviewRating rating)
 {
-    const ReviewRating reviewRating = static_cast<ReviewRating>(rating);
+    const ReviewResult result = m_reviewSession.SubmitRating(rating);
 
-    const ReviewResult result = m_reviewSession.SubmitRating(reviewRating);
+    applyReviewResult(result);
+}
+
+void PolyQ::FlashcardController::applyReviewResult(const ReviewResult& result)
+{
+    setReviewFeedback(result);
 
     if (result.shouldPersist())
     {
@@ -270,50 +341,69 @@ void PolyQ::FlashcardController::reviewCard(int rating)
         }
     }
 
-    updateCurrentCardFromSession();
     emit reviewProgressChanged();
+    emit canContinueReviewChanged();
 }
 
 void PolyQ::FlashcardController::loadCards(int deckId)
 {
+    if (deckId < 0)
+    {
+        m_cardModel.setCards({});
+        return;
+    }
+
     m_cardModel.setCards(m_pRepository->GetCardsForDeck(deckId));
 }
 
 void PolyQ::FlashcardController::startReviewSession(int deckId)
 {
-    std::vector<Flashcard> dueCards;
-    switch (m_reviewSettings.mode)
+    std::vector<Flashcard> cards;
+
+    if (deckId >= 0)
     {
-    case ReviewSessionMode::AllCards:
-        dueCards = m_pRepository->GetCardsForDeck(deckId);
-        break;
-    case ReviewSessionMode::SpacedRepetition:
-        dueCards = m_pRepository->GetDueCardsForDeck(deckId);
-        break;
+        switch (m_reviewSettings.mode)
+        {
+        case ReviewSessionMode::AllCards:
+            cards = m_pRepository->GetCardsForDeck(deckId);
+            break;
+
+        case ReviewSessionMode::SpacedRepetition:
+            cards = m_pRepository->GetDueCardsForDeck(deckId);
+            break;
+        }
     }
 
-    m_reviewSession.Start(dueCards, m_reviewSettings);
+    m_reviewSession.Start(cards, m_reviewSettings);
 
     m_cardIndex = m_reviewSession.HasCards() ? 0 : -1;
     m_showingAnswer = false;
+
+    resetReviewFeedback();
+    setLastAnswerState(0);
+
+    emit cardChanged();
+    emit showingAnswerChanged();
+    emit canContinueReviewChanged();
 }
 
 void PolyQ::FlashcardController::updateCurrentCardFromSession()
 {
     m_showingAnswer = false;
 
+    resetReviewFeedback();
+    setLastAnswerState(0);
+
     if (!m_reviewSession.HasCards())
-    {
         m_cardIndex = -1;
-    }
     else
-    {
         ++m_cardIndex;
-    }
 
     emit cardChanged();
     emit showingAnswerChanged();
     emit selectedDeckChanged();
+    emit reviewProgressChanged();
+    emit canContinueReviewChanged();
 }
 
 void PolyQ::FlashcardController::refreshSelectedDeck()
@@ -322,15 +412,114 @@ void PolyQ::FlashcardController::refreshSelectedDeck()
         return;
 
     const auto deck = m_pRepository->GetDeckById(m_selectedDeckId);
+
     if (!deck.has_value())
         return;
 
-    m_DeckModel.updateDeck(deck.value());
+    m_deckModel.updateDeck(deck.value());
 
     emit selectedDeckChanged();
 }
 
-bool PolyQ::FlashcardController::reviewFinished() const
+void PolyQ::FlashcardController::resetReviewFeedback()
 {
-    return m_reviewSession.TotalCount() > 0 && !m_reviewSession.HasCards();
+    if (!m_showReviewFeedback
+        && m_lastReviewRatingText.isEmpty()
+        && m_lastReviewDueText.isEmpty())
+    {
+        return;
+    }
+
+    m_showReviewFeedback = false;
+    m_lastReviewRatingText.clear();
+    m_lastReviewDueText.clear();
+
+    emit lastReviewFeedbackChanged();
+}
+
+void PolyQ::FlashcardController::setLastAnswerState(int state)
+{
+    if (m_lastAnswerState == state)
+        return;
+
+    m_lastAnswerState = state;
+
+    emit lastAnswerStateChanged();
+}
+
+void PolyQ::FlashcardController::setReviewFeedback(const ReviewResult& result)
+{
+    if (result.type == ReviewResultType::None)
+    {
+        resetReviewFeedback();
+        return;
+    }
+
+    m_lastReviewRatingText = ratingToText(result.rating);
+
+    if (result.updatedCard.has_value())
+        m_lastReviewDueText = dueText(result.updatedCard->dueAt);
+    else if (result.wasRequeued())
+        m_lastReviewDueText = QStringLiteral("Try again in this session");
+    else
+        m_lastReviewDueText.clear();
+
+    m_showReviewFeedback = true;
+
+    emit lastReviewFeedbackChanged();
+}
+
+QString PolyQ::FlashcardController::ratingToText(ReviewRating rating)
+{
+    switch (rating)
+    {
+    case ReviewRating::Again:
+        return QStringLiteral("Again");
+
+    case ReviewRating::Hard:
+        return QStringLiteral("Hard");
+
+    case ReviewRating::Good:
+        return QStringLiteral("Good");
+
+    case ReviewRating::Easy:
+        return QStringLiteral("Easy");
+    }
+
+    return {};
+}
+
+QString PolyQ::FlashcardController::dueText(const QDateTime& dueAt)
+{
+    if (!dueAt.isValid())
+        return {};
+
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+    const qint64 seconds = now.secsTo(dueAt);
+
+    if (seconds <= 0)
+        return QStringLiteral("Due now");
+
+    if (seconds < 60)
+        return QStringLiteral("Next review in less than a minute");
+
+    const qint64 minutes = seconds / 60;
+
+    if (minutes < 60)
+        return QStringLiteral("Next review in %1 minute%2")
+        .arg(minutes)
+        .arg(minutes == 1 ? QString() : QStringLiteral("s"));
+
+    const qint64 hours = minutes / 60;
+
+    if (hours < 24)
+        return QStringLiteral("Next review in %1 hour%2")
+        .arg(hours)
+        .arg(hours == 1 ? QString() : QStringLiteral("s"));
+
+    const qint64 days = hours / 24;
+
+    return QStringLiteral("Next review in %1 day%2")
+        .arg(days)
+        .arg(days == 1 ? QString() : QStringLiteral("s"));
 }

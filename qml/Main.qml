@@ -15,6 +15,7 @@ ApplicationWindow {
     visible: true
     title: "PolyQ"
     color: Theme.background
+    topPadding: 0
 
     Shortcut {
         sequences: [StandardKey.Back, "Esc"]
@@ -31,7 +32,16 @@ ApplicationWindow {
 
     Loader {
         id: backgroundLoader
-        anchors.fill: parent
+
+        anchors {
+            fill: parent
+
+            topMargin: -SafeArea.margins.top
+            bottomMargin: -SafeArea.margins.bottom
+        }
+
+        z: -1
+
         sourceComponent: Theme.colors.backgroundType === 1
             ? solidBackgroundComponent
             : animatedBackgroundComponent
@@ -133,5 +143,21 @@ ApplicationWindow {
 
         PageBackground {
         }
+    }
+
+    Component {
+        id: reviewModeSelectionPageComponent
+
+        ReviewModeSelectionPage {
+            onBack: stack.pop()
+            onStartReview: stack.replace(reviewPageComponent)
+        }
+    }
+
+    function openReviewModeSelection(sessionMode) {
+        stack.push(reviewModeSelectionPageComponent, {
+            flashcardController: flashController,
+            sessionMode: sessionMode
+        })
     }
 }

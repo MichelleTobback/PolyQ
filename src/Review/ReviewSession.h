@@ -4,6 +4,7 @@
 
 #include "ReviewResult.h"
 #include "ReviewScheduler.h"
+#include "AnswerValidator.h"
 
 #include <deque>
 #include <optional>
@@ -17,9 +18,17 @@ namespace PolyQ
         SpacedRepetition = 1
     };
 
+    enum class ReviewInputMode
+    {
+        RatingButtons = 0,
+        TypedAnswer = 1
+    };
+
     struct ReviewSessionSettings
     {
         ReviewSessionMode mode{};
+        ReviewInputMode inputMode{};
+        AnswerValidatorSettings validation{};
     };
 
     struct ReviewSessionStatistics
@@ -41,16 +50,20 @@ namespace PolyQ
         int ReviewedCount() const;
         int TotalCount() const;
 
+        bool CanContinue() const;
+
         const ReviewSessionStatistics& GetStatistics() const;
 
         std::optional<Flashcard> CurrentCard() const;
 
+        ReviewResult SubmitAnswer(const QString& answer);
         ReviewResult SubmitRating(ReviewRating rating);
 
     private:
         ReviewSessionSettings m_settings{};
         std::deque<Flashcard> m_queue;
         ReviewScheduler m_scheduler{};
+        AnswerValidator m_validator{};
 
         int m_reviewedCount = 0;
         int m_totalCount = 0;

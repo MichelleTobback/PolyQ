@@ -20,8 +20,18 @@ ColumnLayout {
         onClicked: root.flashcardController.showAnswer()
     }
 
+    AppButton {
+            visible: root.flashcardController.showReviewFeedback
+
+            text: "Next"
+
+            Layout.fillWidth: true
+
+            onClicked: root.flashcardController.nextCard() 
+        }
+
     RowLayout {
-        visible: root.flashcardController.showingAnswer
+        visible: root.flashcardController.showingAnswer && !root.flashcardController.showReviewFeedback 
 
         Layout.fillWidth: true
         spacing: 6

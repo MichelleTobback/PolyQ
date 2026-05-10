@@ -32,12 +32,14 @@ QtObject {
     // ===== STATUS =====
     readonly property color danger: "#F08AA7"
     readonly property color dangerPressed: "#D46C89"
+    readonly property color dangerSoft: "#FFE7EB"
 
     readonly property color warning: "#F0B07A"
     readonly property color warningPressed: "#D7955E"
 
     readonly property color success: "#79C7AD"
     readonly property color successPressed: "#5FAF95"
+    readonly property color successSoft: "#E7F8ED"
 
     // ===== TEXT =====
     readonly property color textPrimary: "#F5EEF5"
