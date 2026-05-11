@@ -46,7 +46,7 @@ std::optional<PolyQ::Deck> PolyQ::MockDeckRepository::GetDeckById(int deckId)
     return BuildDeckSummary(m_decks[it->second]);
 }
 
-bool PolyQ::MockDeckRepository::CreateDeck(const Deck& deck)
+int PolyQ::MockDeckRepository::CreateDeck(const Deck& deck)
 {
     Deck newDeck = deck;
     newDeck.id = m_nextId++;
@@ -56,10 +56,10 @@ bool PolyQ::MockDeckRepository::CreateDeck(const Deck& deck)
     m_deckIndexById[newDeck.id] = m_decks.size();
     m_decks.push_back(newDeck);
 
-    return true;
+    return newDeck.id;
 }
 
-bool PolyQ::MockDeckRepository::CreateDeck(const QString& name)
+int PolyQ::MockDeckRepository::CreateDeck(const QString& name)
 {
     Deck deck;
     deck.title = name;

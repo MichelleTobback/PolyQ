@@ -16,8 +16,8 @@ namespace PolyQ
         std::vector<Deck> GetAllDecks() override;
         std::optional<Deck> GetDeckById(int deckId) override;
 
-        bool CreateDeck(const Deck& deck) override;
-        bool CreateDeck(const QString& name) override;
+        int CreateDeck(const Deck& deck) override;
+        int CreateDeck(const QString& name) override;
         bool DeleteDeck(int deckId) override;
         bool DeleteDecks(const std::vector<int>& deckIds) override;
         bool UpdateDeck(int deckId, const QString& title, const QString& subtitle, bool enabled) override;

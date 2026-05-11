@@ -55,6 +55,7 @@ ApplicationWindow {
             flashcardController: flashController
             onOpenDeck: stack.push(deckPageComponent)
             onOpenSettings: stack.push(settingsPageComponent)
+            onOpenDeckSettings: stack.push(editDeckComponent)
         }
     }
 

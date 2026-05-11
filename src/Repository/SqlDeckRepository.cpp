@@ -178,9 +178,10 @@ std::optional<PolyQ::Deck> PolyQ::SqlDeckRepository::GetDeckById(int deckId)
     return ReadDeck(query);
 }
 
-bool PolyQ::SqlDeckRepository::CreateDeck(const Deck& deck)
+int PolyQ::SqlDeckRepository::CreateDeck(const Deck& deck)
 {
     QSqlQuery query(m_database);
+
     query.prepare(R"(
         INSERT INTO decks (title, subtitle, enabled, created_at, updated_at)
         VALUES (:title, :subtitle, :enabled, :created_at, :updated_at)
@@ -197,13 +198,13 @@ bool PolyQ::SqlDeckRepository::CreateDeck(const Deck& deck)
     if (!query.exec())
     {
         qWarning() << query.lastError().text();
-        return false;
+        return -1;
     }
 
-    return true;
+    return query.lastInsertId().toInt();
 }
 
-bool PolyQ::SqlDeckRepository::CreateDeck(const QString& name)
+int PolyQ::SqlDeckRepository::CreateDeck(const QString& name)
 {
     Deck deck;
     deck.title = name.trimmed();
@@ -211,7 +212,7 @@ bool PolyQ::SqlDeckRepository::CreateDeck(const QString& name)
     deck.enabled = true;
 
     if (deck.title.isEmpty())
-        return false;
+        return -1;
 
     return CreateDeck(deck);
 }

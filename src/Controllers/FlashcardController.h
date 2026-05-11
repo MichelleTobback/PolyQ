@@ -102,7 +102,7 @@ namespace PolyQ
         Q_INVOKABLE void loadDecks();
         Q_INVOKABLE void selectDeck(int deckId);
 
-        Q_INVOKABLE void createDeck(const QString& name);
+        Q_INVOKABLE int createDeck(const QString& name);
         Q_INVOKABLE void updateDeck(const QString& title, const QString& subtitle, bool enabled);
         Q_INVOKABLE void deleteDecks(const QVariantList& deckIds);
 

@@ -17,8 +17,8 @@ namespace PolyQ
 
 		virtual std::vector<Deck> GetAllDecks() = 0;
 		virtual std::optional<Deck> GetDeckById(int deckId) = 0;
-		virtual bool CreateDeck(const Deck& deck) = 0;
-		virtual bool CreateDeck(const QString& name) = 0;
+		virtual int CreateDeck(const Deck& deck) = 0;
+		virtual int CreateDeck(const QString& name) = 0;
 		virtual bool DeleteDeck(int deckId) = 0;
 		virtual bool DeleteDecks(const std::vector<int>& deckIds) = 0;
 		virtual bool UpdateDeck(int deckId, const QString& title, const QString& subtitle, bool enabled) = 0;

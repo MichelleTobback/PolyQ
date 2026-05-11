@@ -10,7 +10,8 @@ AppPage {
     id: root
 
     signal openDeck()
-    signal openSettings()
+    signal openSettings
+    signal openDeckSettings()
 
     property FlashcardController flashcardController
 
@@ -67,7 +68,15 @@ AppPage {
                     Layout.fillWidth: true
                     text: "Create deck"
 
-                    onClicked: root.flashcardController.createDeck("New Deck")
+                    onClicked: { 
+                        const deckId = root.flashcardController.createDeck("New Deck")
+                        if (deckId >= 0)
+                        {
+                            root.flashcardController.selectDeck(deckId)
+                            root.openDeck()
+                            root.openDeckSettings()
+                        }
+                    }
                 }
 
                 AppButton {

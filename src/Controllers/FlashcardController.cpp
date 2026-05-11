@@ -176,15 +176,18 @@ void PolyQ::FlashcardController::selectDeck(int deckId)
     emit canContinueReviewChanged();
 }
 
-void PolyQ::FlashcardController::createDeck(const QString& name)
+int PolyQ::FlashcardController::createDeck(const QString& name)
 {
     const QString trimmedName = name.trimmed();
 
     if (trimmedName.isEmpty())
-        return;
+        return - 1;
 
-    if (m_pRepository->CreateDeck(trimmedName))
-        loadDecks();
+    const int deckId = m_pRepository->CreateDeck(name);
+
+    loadDecks();
+
+    return deckId;
 }
 
 void PolyQ::FlashcardController::updateDeck(
