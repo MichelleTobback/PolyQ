@@ -110,6 +110,27 @@ bool PolyQ::SqlDeckRepository::CreateTables()
         return false;
     }
 
+    if (!query.exec(R"(
+        CREATE TABLE IF NOT EXISTS card_accepted_answers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            card_id INTEGER NOT NULL,
+            answer TEXT NOT NULL,
+            FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE CASCADE
+        )
+    )"))
+    {
+        qWarning() << query.lastError().text();
+        return false;
+    }
+
+    query.exec("CREATE INDEX IF NOT EXISTS idx_cards_deck_id ON cards(deck_id)");
+    query.exec("CREATE INDEX IF NOT EXISTS idx_review_states_due_at ON review_states(due_at)");
+    query.exec("CREATE INDEX IF NOT EXISTS idx_card_accepted_answers_card_id ON card_accepted_answers(card_id)");
+    query.exec(R"(
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_card_accepted_answers_unique
+        ON card_accepted_answers(card_id, answer)
+    )");
+
     return true;
 }
 
@@ -362,7 +383,7 @@ std::vector<PolyQ::Flashcard> PolyQ::SqlDeckRepository::GetDueCardsForDeck(int d
     return cards;
 }
 
-bool PolyQ::SqlDeckRepository::CreateCard(int deckId, const QString& front, const QString& back)
+bool PolyQ::SqlDeckRepository::CreateCard(const Flashcard& card)
 {
     if (!m_database.transaction())
         return false;
@@ -375,9 +396,9 @@ bool PolyQ::SqlDeckRepository::CreateCard(int deckId, const QString& front, cons
 
     const QString timestamp = nowIso();
 
-    cardQuery.bindValue(":deck_id", deckId);
-    cardQuery.bindValue(":front", front.trimmed());
-    cardQuery.bindValue(":back", back.trimmed());
+    cardQuery.bindValue(":deck_id", card.deckId);
+    cardQuery.bindValue(":front", card.front.trimmed());
+    cardQuery.bindValue(":back", card.back.trimmed());
     cardQuery.bindValue(":created_at", timestamp);
     cardQuery.bindValue(":updated_at", timestamp);
 
@@ -392,11 +413,27 @@ bool PolyQ::SqlDeckRepository::CreateCard(int deckId, const QString& front, cons
 
     QSqlQuery reviewQuery(m_database);
     reviewQuery.prepare(R"(
-        INSERT INTO review_states (card_id, due_at)
-        VALUES (:card_id, :due_at)
+        INSERT INTO review_states (
+            card_id,
+            due_at,
+            interval_days,
+            ease_factor,
+            repetitions
+        )
+        VALUES (
+            :card_id,
+            :due_at,
+            :interval_days,
+            :ease_factor,
+            :repetitions
+        )
     )");
+
     reviewQuery.bindValue(":card_id", cardId);
-    reviewQuery.bindValue(":due_at", timestamp);
+    reviewQuery.bindValue(":due_at", card.dueAt.toUTC().toString(Qt::ISODate));
+    reviewQuery.bindValue(":interval_days", card.intervalDays);
+    reviewQuery.bindValue(":ease_factor", card.easeFactor);
+    reviewQuery.bindValue(":repetitions", card.reviewCount);
 
     if (!reviewQuery.exec())
     {
@@ -405,7 +442,24 @@ bool PolyQ::SqlDeckRepository::CreateCard(int deckId, const QString& front, cons
         return false;
     }
 
+    if (!SaveAcceptedAnswers(cardId, card.acceptedAnswers))
+    {
+        m_database.rollback();
+        return false;
+    }
+
     return Commit();
+}
+
+bool PolyQ::SqlDeckRepository::CreateCard(int deckId, const QString& front, const QString& back)
+{
+    Flashcard card;
+    card.deckId = deckId;
+    card.front = front.trimmed();
+    card.back = back.trimmed();
+    card.dueAt = QDateTime::currentDateTimeUtc();
+
+    return CreateCard(card);
 }
 
 bool PolyQ::SqlDeckRepository::UpdateCard(int cardId, const QString& front, const QString& back)
@@ -484,6 +538,12 @@ bool PolyQ::SqlDeckRepository::UpdateCard(const Flashcard& card)
         return false;
     }
 
+    if (!SaveAcceptedAnswers(card.id, card.acceptedAnswers))
+    {
+        m_database.rollback();
+        return false;
+    }
+
     return Commit();
 }
 
@@ -553,6 +613,7 @@ PolyQ::Flashcard PolyQ::SqlDeckRepository::ReadCard(QSqlQuery& query) const
     card.deckId = query.value("deck_id").toInt();
     card.front = query.value("front").toString();
     card.back = query.value("back").toString();
+    card.acceptedAnswers = LoadAcceptedAnswers(card.id);
 
     card.dueAt = QDateTime::fromString(query.value("due_at").toString(), Qt::ISODate);
     card.intervalDays = query.value("interval_days").toInt();
@@ -580,11 +641,18 @@ bool PolyQ::SqlDeckRepository::SeedTestData()
     if (deckCount > 0)
         return true;
 
+    struct TestCard
+    {
+        QString front;
+        QString back;
+        QStringList acceptedAnswers;
+    };
+
     struct TestDeck
     {
         QString title;
         QString subtitle;
-        std::vector<std::pair<QString, QString>> cards;
+        std::vector<TestCard> cards;
     };
 
     const std::vector<TestDeck> decks =
@@ -593,44 +661,44 @@ bool PolyQ::SqlDeckRepository::SeedTestData()
             "Japanese Basics",
             "Greetings and common phrases",
             {
-                {"Hello", "こんにちは"},
-                {"Thank you", "ありがとう"},
-                {"Goodbye", "さようなら"},
-                {"Yes", "はい"},
-                {"No", "いいえ"},
+                { "Hello", "こんにちは", { "Konnichiwa", "Kon'nichiwa" } },
+                { "Thank you", "ありがとう", { "Arigatou", "Arigato" } },
+                { "Goodbye", "さようなら", { "Sayounara", "Sayonara" } },
+                { "Yes", "はい", { "Hai" } },
+                { "No", "いいえ", { "Iie" } },
             }
         },
         {
             "Russian Basics",
             "Simple conversational words",
             {
-                {"Hello", "Привет"},
-                {"Good morning", "Доброе утро"},
-                {"Thank you", "Спасибо"},
-                {"Please", "Пожалуйста"},
-                {"How are you?", "Как дела?"},
+                { "Hello", "Привет", { "Privet" } },
+                { "Good morning", "Доброе утро", { "Dobroye utro" } },
+                { "Thank you", "Спасибо", { "Spasibo" } },
+                { "Please", "Пожалуйста", { "Pozhaluysta" } },
+                { "How are you?", "Как дела?", { "Kak dela?" } },
             }
         },
         {
             "French Travel",
             "Useful travel vocabulary",
             {
-                {"Train station", "Gare"},
-                {"Airport", "Aéroport"},
-                {"Hotel", "Hôtel"},
-                {"Ticket", "Billet"},
-                {"Where is the bathroom?", "Où sont les toilettes ?"},
+                { "Train station", "Gare", {} },
+                { "Airport", "Aéroport", { "Aeroport" } },
+                { "Hotel", "Hôtel", { "Hotel" } },
+                { "Ticket", "Billet", {} },
+                { "Where is the bathroom?", "Où sont les toilettes ?", { "Ou sont les toilettes ?" } },
             }
         },
         {
             "Korean Food",
             "Food and restaurant terms",
             {
-                {"Rice", "밥"},
-                {"Water", "물"},
-                {"Spicy", "매운"},
-                {"Restaurant", "식당"},
-                {"Delicious", "맛있어요"},
+                { "Rice", "밥", { "Bap" } },
+                { "Water", "물", { "Mul" } },
+                { "Spicy", "매운", { "Maeun" } },
+                { "Restaurant", "식당", { "Sikdang" } },
+                { "Delicious", "맛있어요", { "Masisseoyo", "Mashisseoyo" } },
             }
         }
     };
@@ -642,21 +710,22 @@ bool PolyQ::SqlDeckRepository::SeedTestData()
         deck.subtitle = deckData.subtitle;
         deck.enabled = true;
 
-        if (!CreateDeck(deck))
+        const int deckId = CreateDeck(deck);
+
+        if (deckId < 0)
             continue;
 
-        QSqlQuery idQuery(m_database);
+        for (const TestCard& cardData : deckData.cards)
+        {
+            Flashcard card;
+            card.deckId = deckId;
+            card.front = cardData.front;
+            card.back = cardData.back;
+            card.acceptedAnswers = cardData.acceptedAnswers;
+            card.dueAt = QDateTime::currentDateTimeUtc();
 
-        if (!idQuery.exec("SELECT last_insert_rowid()"))
-            continue;
-
-        if (!idQuery.next())
-            continue;
-
-        const int deckId = idQuery.value(0).toInt();
-
-        for (const auto& [front, back] : deckData.cards)
-            CreateCard(deckId, front, back);
+            CreateCard(card);
+        }
     }
 
     return true;
@@ -671,4 +740,68 @@ bool PolyQ::SqlDeckRepository::Commit()
     }
 
     return true;
+}
+
+bool PolyQ::SqlDeckRepository::SaveAcceptedAnswers(int cardId, const QStringList& answers)
+{
+    QSqlQuery deleteQuery(m_database);
+    deleteQuery.prepare("DELETE FROM card_accepted_answers WHERE card_id = :card_id");
+    deleteQuery.bindValue(":card_id", cardId);
+
+    if (!deleteQuery.exec())
+    {
+        qWarning() << deleteQuery.lastError().text();
+        return false;
+    }
+
+    QSqlQuery insertQuery(m_database);
+    insertQuery.prepare(R"(
+        INSERT INTO card_accepted_answers (card_id, answer)
+        VALUES (:card_id, :answer)
+    )");
+
+    for (const QString& answer : answers)
+    {
+        const QString trimmed = answer.trimmed();
+
+        if (trimmed.isEmpty())
+            continue;
+
+        insertQuery.bindValue(":card_id", cardId);
+        insertQuery.bindValue(":answer", trimmed);
+
+        if (!insertQuery.exec())
+        {
+            qWarning() << insertQuery.lastError().text();
+            return false;
+        }
+    }
+
+    return true;
+}
+
+QStringList PolyQ::SqlDeckRepository::LoadAcceptedAnswers(int cardId) const
+{
+    QStringList answers;
+
+    QSqlQuery query(m_database);
+    query.prepare(R"(
+        SELECT answer
+        FROM card_accepted_answers
+        WHERE card_id = :card_id
+        ORDER BY id ASC
+    )");
+
+    query.bindValue(":card_id", cardId);
+
+    if (!query.exec())
+    {
+        qWarning() << query.lastError().text();
+        return answers;
+    }
+
+    while (query.next())
+        answers.push_back(query.value("answer").toString());
+
+    return answers;
 }

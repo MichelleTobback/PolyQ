@@ -1,7 +1,6 @@
 #pragma once
 #include "ReviewTypes.h"
-
-#include <QString>
+#include <QStringList>
 
 namespace PolyQ
 {
@@ -26,7 +25,7 @@ namespace PolyQ
 	{
 	public:
         AnswerCheckResult Check(const QString& userAnswer,
-            const QString& correctAnswer, const AnswerValidatorSettings& settings = {} ) const;
+            const QStringList& acceptedAnswers, const AnswerValidatorSettings& settings = {} ) const;
 
         Thresholds GetThresholds(SpellingStrictness strictness) const;
 

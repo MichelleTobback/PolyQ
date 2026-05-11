@@ -18,12 +18,14 @@ namespace PolyQ
             DeckIdRole,
             FrontRole,
             BackRole,
-            DueAtRole
+            DueAtRole,
+            AcceptedAnswersRole
         };
 
         explicit FlashcardListModel(QObject* parent = nullptr);
 
         Q_INVOKABLE QVariantMap get(int row) const;
+        Q_INVOKABLE QVariantMap getById(int cardId) const;
 
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
         QVariant data(const QModelIndex& index, int role) const override;

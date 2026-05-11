@@ -76,11 +76,14 @@ ApplicationWindow {
             })
 
             onEditCard: function(cardId, front, back) {
+                const card = flashcardController.cards.getById(cardId)
+
                 stack.push(editCardComponent, {
                     flashcardController: flashController,
-                    cardId: cardId,
-                    frontText: front,
-                    backText: back
+                    cardId: card.cardId,
+                    frontText: card.front,
+                    backText: card.back,
+                    acceptedAnswers: card.acceptedAnswers
                 })
             }
 

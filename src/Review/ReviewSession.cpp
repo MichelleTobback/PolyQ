@@ -76,7 +76,16 @@ PolyQ::ReviewResult PolyQ::ReviewSession::SubmitAnswer(const QString& answer)
     if (m_queue.empty())
         return {};
 
-    const AnswerCheckResult answerResult = m_validator.Check(answer, CurrentCard()->back, m_settings.validation);
+    const std::optional<Flashcard> card = CurrentCard();
+    if (!card.has_value())
+        return {};
+
+    QStringList validAnswers;
+    validAnswers.push_back(card->back);
+    validAnswers.append(card->acceptedAnswers);
+
+    const AnswerCheckResult answerResult =
+        m_validator.Check(answer, validAnswers, m_settings.validation);
 
     ReviewResult result = SubmitRating(answerResult.suggestedRating);
     result.answerResult = answerResult;

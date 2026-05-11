@@ -141,14 +141,19 @@ std::vector<PolyQ::Flashcard> PolyQ::MockDeckRepository::GetDueCardsForDeck(int 
 
 bool PolyQ::MockDeckRepository::CreateCard(int deckId, const QString& front, const QString& back)
 {
-    if (!HasDeck(deckId))
-        return false;
-
     Flashcard card;
     card.id = m_nextCardId++;
     card.deckId = deckId;
     card.front = front;
     card.back = back;
+
+    return CreateCard(card);
+}
+
+bool PolyQ::MockDeckRepository::CreateCard(const Flashcard& card)
+{
+    if (!HasDeck(card.deckId))
+        return false;
 
     m_cardIndexById[card.id] = m_cards.size();
     m_cards.push_back(card);

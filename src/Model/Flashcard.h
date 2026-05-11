@@ -13,6 +13,9 @@ namespace PolyQ
         QString front;
         QString back;
 
+        // Example: back = "こんにちは", acceptedAnswers = { "Kon'nichiwa", "konnichiwa" }
+        QStringList acceptedAnswers;
+
         int reviewCount = 0;
         int intervalDays = 0;
         double easeFactor = 2.5;

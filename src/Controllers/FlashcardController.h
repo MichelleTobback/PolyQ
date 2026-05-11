@@ -106,8 +106,8 @@ namespace PolyQ
         Q_INVOKABLE void updateDeck(const QString& title, const QString& subtitle, bool enabled);
         Q_INVOKABLE void deleteDecks(const QVariantList& deckIds);
 
-        Q_INVOKABLE void createCard(const QString& front, const QString& back);
-        Q_INVOKABLE void updateCard(int cardId, const QString& front, const QString& back);
+        Q_INVOKABLE void createCard(const QString& front, const QString& back, const QStringList& answers);
+        Q_INVOKABLE void updateCard(int cardId, const QString& front, const QString& back, const QStringList& answers);
         Q_INVOKABLE void deleteCards(const QVariantList& cardIds);
 
     signals:
@@ -132,6 +132,8 @@ namespace PolyQ
         void resetReviewFeedback();
         void setLastAnswerState(int state);
         void setReviewFeedback(const ReviewResult& result);
+
+        QStringList normalizedAnswers(const QStringList& answers, const QString& mainAnswer);
 
         static QString ratingToText(ReviewRating rating);
         static QString dueText(const QDateTime& dueAt);

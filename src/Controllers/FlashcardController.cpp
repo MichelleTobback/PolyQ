@@ -34,7 +34,8 @@ QVariantMap PolyQ::FlashcardController::currentCard() const
         { "id", card->id },
         { "deckId", card->deckId },
         { "front", card->front },
-        { "back", card->back }
+        { "back", card->back },
+        { "acceptedAnswers", card->acceptedAnswers }
     };
 }
 
@@ -243,7 +244,7 @@ void PolyQ::FlashcardController::deleteDecks(const QVariantList& deckIds)
     emit canContinueReviewChanged();
 }
 
-void PolyQ::FlashcardController::createCard(const QString& front, const QString& back)
+void PolyQ::FlashcardController::createCard(const QString& front, const QString& back, const QStringList& answers)
 {
     if (m_selectedDeckId < 0)
         return;
@@ -254,7 +255,13 @@ void PolyQ::FlashcardController::createCard(const QString& front, const QString&
     if (trimmedFront.isEmpty() || trimmedBack.isEmpty())
         return;
 
-    if (!m_pRepository->CreateCard(m_selectedDeckId, trimmedFront, trimmedBack))
+    Flashcard card;
+    card.deckId = m_selectedDeckId;
+    card.front = trimmedFront;
+    card.back = trimmedBack;
+    card.acceptedAnswers = normalizedAnswers(answers, trimmedBack);
+
+    if (!m_pRepository->CreateCard(card))
         return;
 
     loadCards(m_selectedDeckId);
@@ -271,7 +278,8 @@ void PolyQ::FlashcardController::createCard(const QString& front, const QString&
 void PolyQ::FlashcardController::updateCard(
     int cardId,
     const QString& front,
-    const QString& back)
+    const QString& back,
+    const QStringList& answers)
 {
     if (m_selectedDeckId < 0)
         return;
@@ -282,7 +290,28 @@ void PolyQ::FlashcardController::updateCard(
     if (trimmedFront.isEmpty() || trimmedBack.isEmpty())
         return;
 
-    if (!m_pRepository->UpdateCard(cardId, trimmedFront, trimmedBack))
+    std::optional<Flashcard> existingCard;
+
+    for (int i = 0; i < m_cardModel.count(); ++i)
+    {
+        Flashcard card = m_cardModel.cardAt(i);
+
+        if (card.id == cardId)
+        {
+            existingCard = card;
+            break;
+        }
+    }
+
+    if (!existingCard.has_value())
+        return;
+
+    Flashcard card = existingCard.value();
+    card.front = trimmedFront;
+    card.back = trimmedBack;
+    card.acceptedAnswers = normalizedAnswers(answers, trimmedBack);
+
+    if (!m_pRepository->UpdateCard(card))
         return;
 
     loadCards(m_selectedDeckId);
@@ -470,6 +499,34 @@ void PolyQ::FlashcardController::setReviewFeedback(const ReviewResult& result)
     m_showReviewFeedback = true;
 
     emit lastReviewFeedbackChanged();
+}
+
+QStringList PolyQ::FlashcardController::normalizedAnswers(const QStringList& answers, const QString& mainAnswer)
+{
+    QStringList result;
+    QSet<QString> seen;
+
+    const QString mainKey = mainAnswer.trimmed().toCaseFolded();
+
+    for (const QString& answer : answers)
+    {
+        const QString trimmed = answer.trimmed();
+        const QString key = trimmed.toCaseFolded();
+
+        if (trimmed.isEmpty())
+            continue;
+
+        if (key == mainKey)
+            continue;
+
+        if (seen.contains(key))
+            continue;
+
+        seen.insert(key);
+        result.push_back(trimmed);
+    }
+
+    return result;
 }
 
 QString PolyQ::FlashcardController::ratingToText(ReviewRating rating)

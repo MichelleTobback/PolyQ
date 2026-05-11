@@ -17,8 +17,29 @@ QVariantMap PolyQ::FlashcardListModel::get(int row) const
         { "deckId", card.deckId },
         { "front", card.front },
         { "back", card.back },
-        { "dueAt", card.dueAt }
+        { "dueAt", card.dueAt },
+        { "acceptedAnswers", card.acceptedAnswers }
     };
+}
+
+QVariantMap PolyQ::FlashcardListModel::getById(int cardId) const
+{
+    for (const Flashcard& card : m_cards)
+    {
+        if (card.id != cardId)
+            continue;
+
+        return {
+            { "cardId", card.id },
+            { "deckId", card.deckId },
+            { "front", card.front },
+            { "back", card.back },
+            { "dueAt", card.dueAt },
+            { "acceptedAnswers", card.acceptedAnswers }
+        };
+    }
+
+    return {};
 }
 
 int PolyQ::FlashcardListModel::rowCount(const QModelIndex& parent) const
@@ -53,6 +74,8 @@ QVariant PolyQ::FlashcardListModel::data(const QModelIndex& index, int role) con
         return card.back;
     case DueAtRole:
         return card.dueAt;
+    case AcceptedAnswersRole:
+        return card.acceptedAnswers;
     default:
         return {};
     }
@@ -65,7 +88,8 @@ QHash<int, QByteArray> PolyQ::FlashcardListModel::roleNames() const
         { DeckIdRole, "deckId" },
         { FrontRole, "front" },
         { BackRole, "back" },
-        { DueAtRole, "dueAt" }
+        { DueAtRole, "dueAt" },
+        { AcceptedAnswersRole, "acceptedAnswers" }
     };
 }
 
@@ -93,7 +117,8 @@ void PolyQ::FlashcardListModel::updateCard(const Flashcard& card)
             {
                 FrontRole,
                 BackRole,
-                DueAtRole
+                DueAtRole,
+                AcceptedAnswersRole
             }
         );
 

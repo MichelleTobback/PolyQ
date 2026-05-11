@@ -25,6 +25,7 @@ namespace PolyQ
 
         std::vector<Flashcard> GetCardsForDeck(int deckId) override;
         std::vector<Flashcard> GetDueCardsForDeck(int deckId) override;
+        bool CreateCard(const Flashcard& card) override;
         bool CreateCard(int deckId, const QString& front, const QString& back) override;
         bool UpdateCard(int cardId, const QString& front, const QString& back) override;
         bool UpdateCard(const Flashcard& card) override;
@@ -37,6 +38,9 @@ namespace PolyQ
         Flashcard ReadCard(class QSqlQuery& query) const;
         bool SeedTestData();
         bool Commit();
+
+        bool SaveAcceptedAnswers(int cardId, const QStringList& answers);
+        QStringList LoadAcceptedAnswers(int cardId) const;
 
     private:
         QString m_connectionName;

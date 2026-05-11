@@ -4,40 +4,60 @@
 #include <algorithm>
 #include <vector>
 
-PolyQ::AnswerCheckResult PolyQ::AnswerValidator::Check(const QString& userAnswer, const QString& correctAnswer, const AnswerValidatorSettings& settings) const
+PolyQ::AnswerCheckResult PolyQ::AnswerValidator::Check(
+    const QString& userAnswer,
+    const QStringList& acceptedAnswers,
+    const AnswerValidatorSettings& settings) const
 {
     const QString normalizedUser = Normalize(userAnswer, settings);
-    const QString normalizedCorrect = Normalize(correctAnswer, settings);
 
-    AnswerCheckResult result{};
-
-    result.editDistance = LevenshteinDistance(normalizedUser, normalizedCorrect);
-
-    const int maxLength = std::max(normalizedUser.length(), normalizedCorrect.length());
-
-    if (maxLength == 0)
-    {
-        result.similarity = 1.0;
-        result.accepted = true;
-        return result;
-    }
-
-    result.similarity = 1.0 - (result.editDistance / static_cast<double>(maxLength));
+    AnswerCheckResult bestResult{};
+    bestResult.suggestedRating = ReviewRating::Again;
+    bestResult.similarity = 0.0;
+    bestResult.editDistance = std::numeric_limits<int>::max();
 
     const Thresholds thresholds = GetThresholds(settings.strictness);
 
-    if (result.similarity >= thresholds.easy)
-        result.suggestedRating = ReviewRating::Easy;
-    else if (result.similarity >= thresholds.good)
-        result.suggestedRating = ReviewRating::Good;
-    else if (result.similarity >= thresholds.hard)
-        result.suggestedRating = ReviewRating::Hard;
-    else
-        result.suggestedRating = ReviewRating::Again;
+    for (const QString& acceptedAnswer : acceptedAnswers)
+    {
+        const QString normalizedCorrect =
+            Normalize(acceptedAnswer, settings);
 
-    result.accepted = result.suggestedRating > ReviewRating::Hard;
+        AnswerCheckResult result{};
 
-    return result;
+        result.editDistance =
+            LevenshteinDistance(normalizedUser, normalizedCorrect);
+
+        const int maxLength =
+            std::max(normalizedUser.length(), normalizedCorrect.length());
+
+        if (maxLength == 0)
+        {
+            result.similarity = 1.0;
+        }
+        else
+        {
+            result.similarity =
+                1.0 - (result.editDistance / static_cast<double>(maxLength));
+        }
+
+        if (result.similarity >= thresholds.easy)
+            result.suggestedRating = ReviewRating::Easy;
+        else if (result.similarity >= thresholds.good)
+            result.suggestedRating = ReviewRating::Good;
+        else if (result.similarity >= thresholds.hard)
+            result.suggestedRating = ReviewRating::Hard;
+        else
+            result.suggestedRating = ReviewRating::Again;
+
+        result.accepted =
+            result.suggestedRating > ReviewRating::Hard;
+
+        if (result.similarity > bestResult.similarity)
+            bestResult = result;
+    }
+
+    return bestResult;
 }
 
 PolyQ::Thresholds PolyQ::AnswerValidator::GetThresholds(SpellingStrictness strictness) const

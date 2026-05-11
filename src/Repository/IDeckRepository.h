@@ -26,6 +26,7 @@ namespace PolyQ
 		virtual std::vector<Flashcard> GetCardsForDeck(int deckId) = 0;
 		virtual std::vector<Flashcard> GetDueCardsForDeck(int deckId) = 0;
 		virtual bool CreateCard(int deckId, const QString& front, const QString& back) = 0;
+		virtual bool CreateCard(const Flashcard& card) = 0;
 		virtual bool UpdateCard(int cardId, const QString& front, const QString& back) = 0;
 		virtual bool UpdateCard(const Flashcard& card) = 0;
 		virtual bool DeleteCard(int cardId) = 0;

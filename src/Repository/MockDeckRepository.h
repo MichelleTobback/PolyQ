@@ -26,6 +26,7 @@ namespace PolyQ
         std::vector<Flashcard> GetDueCardsForDeck(int deckId) override;
 
         bool CreateCard(int deckId, const QString& front, const QString& back) override;
+        bool CreateCard(const Flashcard& card) override;
         bool UpdateCard(int cardId, const QString& front, const QString& back) override;
         bool UpdateCard(const Flashcard& card) override;
         bool DeleteCard(int cardId) override;
