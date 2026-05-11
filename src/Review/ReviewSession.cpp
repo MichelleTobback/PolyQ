@@ -1,5 +1,8 @@
 #include "ReviewSession.h"
 
+#include <algorithm>
+#include <random>
+
 void PolyQ::ReviewSession::Start(std::vector<Flashcard> cards, const ReviewSessionSettings& settings)
 {
     m_settings = settings;
@@ -12,6 +15,8 @@ void PolyQ::ReviewSession::Start(std::vector<Flashcard> cards, const ReviewSessi
 	m_totalCount = static_cast<int>(cards.size());
 
     m_statistics = {};
+
+    ShuffleQueue();
 }
 
 void PolyQ::ReviewSession::Clear()
@@ -89,7 +94,7 @@ PolyQ::ReviewResult PolyQ::ReviewSession::SubmitRating(ReviewRating rating)
 
     if (m_settings.mode == ReviewSessionMode::AllCards)
     {
-        m_queue.push_back(current);
+        RequeueCard(current);
 
         if (m_totalCount > 0)
             m_reviewedCount = (m_reviewedCount + 1) % m_totalCount;
@@ -110,8 +115,7 @@ PolyQ::ReviewResult PolyQ::ReviewSession::SubmitRating(ReviewRating rating)
 
     if (rating == ReviewRating::Again)
     {
-        m_queue.push_back(current);
-
+        RequeueCard(current);
         ReviewResult result;
         result.type = ReviewResultType::Requeued;
         result.rating = rating;
@@ -128,4 +132,38 @@ PolyQ::ReviewResult PolyQ::ReviewSession::SubmitRating(ReviewRating rating)
     ++m_reviewedCount;
 
     return result;
+}
+
+void PolyQ::ReviewSession::ShuffleQueue()
+{
+    std::vector<Flashcard> shuffled(m_queue.begin(), m_queue.end());
+
+    std::random_device rd;
+    std::mt19937 rng(rd());
+
+    std::shuffle(shuffled.begin(), shuffled.end(), rng);
+
+    m_queue.clear();
+
+    for (const Flashcard& card : shuffled)
+        m_queue.push_back(card);
+}
+
+void PolyQ::ReviewSession::RequeueCard(const Flashcard& card)
+{
+    if (m_queue.empty())
+    {
+        m_queue.push_back(card);
+        return;
+    }
+
+    std::random_device rd;
+    std::mt19937 rng(rd());
+
+    std::uniform_int_distribution<int> distribution(1,
+        static_cast<int>(m_queue.size()));
+
+    const int insertIndex = distribution(rng);
+
+    m_queue.insert(m_queue.begin() + insertIndex, card);
 }

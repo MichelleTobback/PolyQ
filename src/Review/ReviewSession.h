@@ -60,6 +60,10 @@ namespace PolyQ
         ReviewResult SubmitRating(ReviewRating rating);
 
     private:
+        void ShuffleQueue();
+        void RequeueCard(const Flashcard& card);
+
+    private:
         ReviewSessionSettings m_settings{};
         std::deque<Flashcard> m_queue;
         ReviewScheduler m_scheduler{};
